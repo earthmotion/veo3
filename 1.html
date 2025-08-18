@@ -1,576 +1,205 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-bs-theme="dark">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Halaman Terproteksi</title>
-    <style>
-        /* --- Gaya untuk Halaman Kunci Sandi --- */
-        :root {
-            --background-color: #111827;
-            --form-background: #1f2937;
-            --text-color: #f9fafb;
-            --muted-text: #9ca3af;
-            --border-color: #374151;
-            --accent-color: #3b82f6;
-            --admin-accent-color: #10b981;
-            --error-color: #ef4444;
-            --success-color: #16a34a;
-        }
+    <title>VEO 3 UNLIMITED App</title>
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" xintegrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <style>
+        /* Custom styles adapted for the new structure */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@700&display=swap');
+        
+        :root {
+            --background-start: #111;
+            --background-end: #000;
+            --surface-color: #181818;
+            --border-color: #2a2a2a;
+            --primary-color: #3b82f6;
+            --primary-hover: #60a5fa;
+            --text-main: #f1f5f9;
+            --text-secondary: #94a3b8;
         }
 
         body {
-            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
-            background-color: var(--background-color);
-            color: var(--text-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-end);
+            background-image: radial-gradient(circle at top, var(--background-start), var(--background-end));
+            color: var(--text-main);
             min-height: 100vh;
-            transition: background-color 0.3s;
-            padding: 24px;
         }
 
-        #password-container {
-            background-color: var(--form-background);
-            padding: 40px;
-            border-radius: 16px;
+        h1, h3, h4, h5, .card-title {
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .card {
+            background-color: var(--surface-color);
             border: 1px solid var(--border-color);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-            text-align: center;
-            width: 100%;
-            max-width: 400px;
-        }
-
-        #password-container h1 {
-            font-size: 24px;
-            margin-bottom: 12px;
-        }
-
-        #password-container p {
-            color: var(--muted-text);
-            margin-bottom: 24px;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
         
-        #password-input {
-            width: 100%;
-            padding: 14px;
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            background-color: var(--background-color);
-            color: var(--text-color);
-            font-size: 16px;
-            outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
+        .form-control {
+            background-color: #1f1f1f;
+            border-color: #3a3a3a;
+            color: var(--text-main);
         }
-
-        #password-input:focus {
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4);
-        }
-
-        #submit-button {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 10px;
-            background-color: var(--accent-color);
-            color: white;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: background-color 0.2s;
-        }
-
-        #submit-button:hover:not([disabled]) {
-            background-color: #2563eb;
+        .form-control:focus {
+            background-color: #1f1f1f;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+            color: var(--text-main);
         }
         
-        #submit-button[disabled] {
-            opacity: 0.6;
-            cursor: not-allowed;
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            border-color: var(--primary-hover);
         }
 
-        #error-message {
-            color: var(--error-color);
-            margin-top: 15px;
-            font-size: 14px;
-            height: 20px;
-        }
-
-        .content-section {
-            display: none; /* Semua konten disembunyikan secara default */
-            width: 100%;
-            max-width: 1300px;
-        }
-        
-        .top-bar {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            margin-bottom: 20px;
-            padding: 0 10px;
-            gap: 10px;
-        }
-
-        #login-info {
-            font-size: 14px;
-            color: var(--muted-text);
-        }
-
-        #login-info strong {
-            color: var(--text-color);
-        }
-        
-        #logout-button {
-            background-color: var(--error-color);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background-color 0.2s;
-            align-self: flex-end; /* Pindahkan tombol ke kanan */
-        }
-        
-        #logout-button:hover {
-            background-color: #dc2626;
-        }
-        
-        /* --- Gaya Panel Admin --- */
-        #admin-panel {
-            background-color: var(--form-background);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 24px;
-        }
-        #admin-panel h2 {
-            font-size: 20px;
-            margin-bottom: 16px;
-            color: var(--admin-accent-color);
-        }
-        #login-list-container {
-            font-size: 14px;
-        }
-        #login-list-container ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        #login-list-container li {
-            padding: 10px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-         #login-list-container li:last-child {
-            border-bottom: none;
-        }
-        .login-role-admin { color: var(--admin-accent-color); font-weight: bold; }
-        .login-role-user { color: var(--accent-color); font-weight: bold; }
-
-
-        /* --- Gaya untuk Aplikasi VEO3 --- */
-        .veo-container {
-            display: flex;
-            gap: 24px;
-            align-items: flex-start;
-            width: 100%;
-            margin: auto;
-        }
-
-        .veo-main {
-            flex: 1;
-            max-width: 650px;
-        }
-        
-        .result-area {
-            flex: 1;
-            max-width: 650px;
-            position: sticky;
-            top: 24px;
-        }
-
-        .card { 
-            background:var(--form-background); 
-            border:1px solid var(--border-color); 
-            border-radius:16px; 
-            box-shadow:0 6px 14px rgba(0,0,0,.1); 
-            width: 100%;
-        }
-        .card .hd { 
-            padding:14px 16px; 
-            border-bottom:1px solid var(--border-color); 
-            font-weight:700; 
-            font-size: 20px;
-            text-align: center;
-        }
-        .card .bd { padding:24px; }
-
-        label { 
-            font-size:14px; 
-            color:var(--muted-text); 
-            display:block; 
-            margin-bottom:8px; 
-            font-weight: 600;
-        }
-
-        textarea { 
-            width:100%; 
-            padding:10px 12px; 
-            border:1px solid var(--border-color); 
-            border-radius:12px; 
-            outline:none; 
-            font:inherit; 
-            background:var(--background-color); 
-            color: var(--text-color); 
-            margin-bottom: 16px;
-        }
-        
-        .buttons-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .choice-btn {
-            flex-grow: 1;
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            background-color: var(--background-color);
-            color: var(--muted-text);
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-            transition: all 0.2s ease;
-            text-align: center;
-        }
-
-        .choice-btn:hover {
-            background-color: var(--border-color);
-            color: var(--text-color);
-        }
-
-        .choice-btn.active {
-            background-color: var(--accent-color);
-            color: white;
-            border-color: var(--accent-color);
-        }
-
-        .btn { 
-            appearance:none; 
-            width: 100%;
-            border:1px solid var(--border-color); 
-            background:var(--accent-color); 
-            color:#fff; 
-            padding:12px 28px;
-            border-radius:12px; 
-            cursor:pointer; 
-            font-weight:700;
-            font-size: 16px;
-            transition: background-color 0.2s; 
-            margin-top: 16px;
-        }
-        .btn:hover:not([disabled]) { background: #2563eb; }
-        .btn[disabled] { opacity:.6; cursor:not-allowed; }
-        
-        #loadingSpinner {
-            display: none;
-            margin: 30px auto;
-            width: 50px;
-            height: 50px;
-            border: 6px solid var(--border-color);
-            border-top: 6px solid var(--accent-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        #result {
-            padding: 15px;
-            border-radius: 12px;
-            background: var(--form-background);
-            border: 1px solid var(--border-color);
-            min-height: 400px;
-            display: flex;
-            flex-wrap: wrap; 
-            gap: 15px; 
-            align-items: flex-start;
-            justify-content: flex-start;
-            color: var(--muted-text);
-            width: 100%;
-        }
-        
-        .video-wrapper {
-            flex: 1 1 calc(50% - 10px);
-            max-width: calc(50% - 10px);
-            min-width: 220px;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .video-wrapper video {
-            width: 100%; 
-            max-width: 100%;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            margin-top: 8px;
-            background-color: #000;
-            object-fit: contain;
-        }
-        
-        .video-wrapper p.error { color: var(--error-color); }
-
-        .actions-wrapper {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 8px;
-        }
-
-        .action-btn {
-            background-color: var(--border-color);
-            color: var(--text-color);
-            border: none;
-            padding: 8px 14px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: background-color 0.2s;
-        }
-        .action-btn:hover {
-            background-color: #4b5563;
-        }
-
+        /* New styles for the vanilla JS version */
         #notification {
             display: none;
-            padding: 12px;
-            margin-bottom: 16px;
-            border-radius: 8px;
-            text-align: center;
-            font-weight: 500;
-            background-color: #991b1b;
-            color: #fca5a5;
-            border: 1px solid #ef4444;
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1050;
+        }
+        
+        #loadingSpinner {
+            display: none; /* Hidden by default */
+        }
+        
+        #result {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            justify-content: center;
         }
 
-        @media (max-width: 900px) {
-            .veo-container {
-                flex-direction: column;
-                align-items: center;
-            }
-            .result-area {
-                position: static;
-                width: 100%;
-                max-width: 650px;
-                margin-top: 24px;
-            }
-            .veo-main {
-                 width: 100%;
-            }
-            .video-wrapper {
-                flex-basis: 100%;
-                max-width: 100%;
-            }
+        .video-wrapper {
+            flex: 1 1 45%;
+            min-width: 300px;
+            background-color: #1f1f1f;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+        }
+        .video-wrapper video {
+            width: 100%;
+            border-radius: 0.25rem;
+            background-color: #000;
+        }
+        .video-wrapper .actions-wrapper {
+            margin-top: 0.75rem;
+        }
+        
+        .choice-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .choice-btn.active {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: #fff;
+            transform: scale(1.05);
         }
     </style>
 </head>
+
 <body>
+    <div class="container py-4">
+        <header class="text-center mb-4 pb-3 border-bottom border-secondary-subtle">
+            <h1 class="fw-bold fs-2">VEO 3 UNLIMITED</h1>
+            <p class="text-body-secondary">Karya anda tercipta melalui sentuhan kreativitas dan teknologi AI</p>
+        </header>
 
-    <!-- Kontainer Form Password -->
-    <div id="password-container">
-        <h1>Akses Terbatas</h1>
-        <p>Silakan masukkan kata sandi untuk melanjutkan.</p>
-        <form id="password-form">
-            <input type="password" id="password-input" placeholder="Kata Sandi" required>
-            <div id="error-message"></div>
-            <button type="submit" id="submit-button">Masuk</button>
-        </form>
-    </div>
+        <!-- Notification Area -->
+        <div id="notification" class="alert alert-warning" role="alert"></div>
 
-    <!-- Konten Gabungan (Tersembunyi) -->
-    <div id="main-content" class="content-section">
-        <div class="top-bar">
-            <button id="logout-button">Keluar</button>
-            <div id="login-info"></div>
-        </div>
-        
-        <!-- Panel Khusus Admin -->
-        <div id="admin-panel" style="display: none;">
-            <h2>Aktivitas Login Terbaru</h2>
-            <div id="login-list-container"></div>
-        </div>
-
-        <div class="veo-container">
-            <main class="veo-main">
-                <section class="card">
-                    <div class="hd">Prompt to Video & AI Tools</div>
-                    <div class="bd">
-                        <label>Pilih Model VEO3:</label>
-                        <div id="modelV3Buttons" class="buttons-container">
-                            <button class="choice-btn active" data-value="veo3">Prompt</button>
-                        </div>
-
-                        <label>Pilih Model VEO3 FAST:</label>
-                        <div id="modelV3FastButtons" class="buttons-container">
-                            <button class="choice-btn" data-value="veo3-fast">Prompt</button>
+        <div class="card">
+            <div class="card-body p-4">
+                <div class="row g-4">
+                    <!-- Input and Configuration Column -->
+                    <div class="col-lg-6">
+                        <div class="mb-3">
+                            <label for="promptInput" class="form-label">Prompt</label>
+                            <textarea id="promptInput" class="form-control" rows="5" placeholder="A futuristic city skyline at night..."></textarea>
                         </div>
                         
-                        <label id="promptLabel" for="promptInput" style="margin-top: 16px;">Masukkan Prompt:</label>
-                        <textarea id="promptInput" placeholder="Contoh: seekor anjing berlari di padang rumput" rows="4"></textarea>
+                        <div class="mb-3">
+                            <label class="form-label">Pilih Model VEO 3</label>
+                            <div id="modelV3Buttons" class="btn-group w-100">
+                                <button type="button" class="btn btn-outline-secondary choice-btn" data-value="veo3-sd">SD</button>
+                                <button type="button" class="btn btn-outline-secondary choice-btn active" data-value="veo3">HD</button>
+                                <button type="button" class="btn btn-outline-secondary choice-btn" data-value="veo3-fhd">FHD</button>
+                            </div>
+                        </div>
 
-                        <div id="notification"></div>
-                        <button id="generateBtn" class="btn" onclick="generateMedia()">START</button>
+                        <div class="mb-4">
+                            <label class="form-label">Pilih Model VEO 3 (Cepat)</label>
+                            <div id="modelV3FastButtons" class="btn-group w-100">
+                                <button type="button" class="btn btn-outline-secondary choice-btn" data-value="veo3-fast-sd">SD</button>
+                                <button type="button" class="btn btn-outline-secondary choice-btn" data-value="veo3-fast">HD</button>
+                                <button type="button" class="btn btn-outline-secondary choice-btn" data-value="veo3-fast-fhd">FHD</button>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary w-100" onclick="generateMedia()">
+                            <i class="fa-solid fa-play me-2"></i>Buat Video
+                        </button>
                     </div>
-                </section>
-            </main>
-            <aside class="result-area">
-                <div id="loadingSpinner"></div>
-                <div id="result">
-                    <p>Hasil akan muncul di sini</p>
+
+                    <!-- Result Column -->
+                    <div class="col-lg-6">
+                        <h5 class="mb-3">Hasil Video</h5>
+                        <div id="loadingSpinner" class="text-center">
+                            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2 text-body-secondary">Membuat video, mohon tunggu...</p>
+                        </div>
+                        <div id="result" class="bg-dark-subtle p-3 rounded-3" style="min-height: 250px;">
+                             <p class="text-body-secondary m-auto">Video Anda akan muncul di sini.</p>
+                        </div>
+                    </div>
                 </div>
-            </aside>
+            </div>
         </div>
-        <footer style="text-align:center; margin-top:20px; font-size:14px; color:var(--muted-text);">
-            © 2025 VEO3.
+
+        <footer class="text-center text-body-secondary small py-4 mt-4">
+            © 2024 — VEO 3 Studio • Ditenagai oleh Arif Kurniawan.
         </footer>
     </div>
 
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
+    <!-- Application Logic -->
     <script>
-        // --- PENGATURAN KATA SANDI ---
-        const KATA_SANDI_USER = "user123"; 
-        const KATA_SANDI_ADMIN = "asolole2013"; 
-        
-        // --- ELEMEN DOM ---
-        const passwordForm = document.getElementById('password-form');
-        const passwordInput = document.getElementById('password-input');
-        const submitButton = document.getElementById('submit-button');
-        const errorMessage = document.getElementById('error-message');
-        const passwordContainer = document.getElementById('password-container');
-        const mainContent = document.getElementById('main-content');
-        const logoutButton = document.getElementById('logout-button');
-        const loginInfo = document.getElementById('login-info');
-        const adminPanel = document.getElementById('admin-panel');
-        const loginListContainer = document.getElementById('login-list-container');
-
-        // --- FUNGSI LOGIN ---
-        passwordForm.addEventListener('submit', async function(event) {
-            event.preventDefault(); 
-            const kataSandiYangDimasukkan = passwordInput.value;
-            let role = null;
-
-            if (kataSandiYangDimasukkan === KATA_SANDI_ADMIN) {
-                role = 'Admin';
-            } else if (kataSandiYangDimasukkan === KATA_SANDI_USER) {
-                role = 'User';
-            }
-
-            if (role) {
-                submitButton.disabled = true;
-                submitButton.textContent = 'Memverifikasi...';
-                errorMessage.textContent = '';
-
-                try {
-                    const response = await fetch('https://ipinfo.io/json');
-                    if (!response.ok) throw new Error('Gagal mengambil info IP');
-                    const geoData = await response.json();
-                    
-                    const ip = geoData.ip || 'Tidak diketahui';
-                    const location = (geoData.city && geoData.country) ? `${geoData.city}, ${geoData.country}` : 'Tidak diketahui';
-
-                    saveLoginRecord(role, ip, location);
-                    loginInfo.innerHTML = `Masuk sebagai: <strong>${role}</strong> | IP: ${ip} (${location})`;
-                    
-                    if (role === 'Admin') {
-                        adminPanel.style.display = 'block';
-                        displayLoginList();
-                    }
-
-                } catch (error) {
-                    console.error("Geo Fetch Error:", error);
-                    loginInfo.innerHTML = `Masuk sebagai: <strong>${role}</strong> | Info IP/Lokasi tidak tersedia`;
-                    saveLoginRecord(role, 'N/A', 'N/A');
-                } finally {
-                    passwordContainer.style.display = 'none';
-                    mainContent.style.display = 'block';
-                    submitButton.disabled = false;
-                    submitButton.textContent = 'Masuk';
-                }
-
-            } else {
-                errorMessage.textContent = 'Kata sandi salah. Silakan coba lagi.';
-                passwordInput.value = '';
-                setTimeout(() => { errorMessage.textContent = ''; }, 3000);
-            }
-        });
-
-        // --- FUNGSI MANAJEMEN RIWAYAT LOGIN ---
-        function saveLoginRecord(role, ip, location) {
-            const loginHistory = JSON.parse(localStorage.getItem('veo3LoginHistory')) || [];
-            const newRecord = { role, ip, location, timestamp: new Date().toISOString() };
-            loginHistory.unshift(newRecord);
-            if (loginHistory.length > 20) loginHistory.pop();
-            localStorage.setItem('veo3LoginHistory', JSON.stringify(loginHistory));
-        }
-
-        function displayLoginList() {
-            const loginHistory = JSON.parse(localStorage.getItem('veo3LoginHistory')) || [];
-            if (loginHistory.length === 0) {
-                loginListContainer.innerHTML = '<p>Belum ada aktivitas login.</p>';
-                return;
-            }
-            const listElement = document.createElement('ul');
-            loginHistory.forEach(record => {
-                const listItem = document.createElement('li');
-                const localTime = new Date(record.timestamp).toLocaleString('id-ID');
-                listItem.innerHTML = `
-                    <span><span class="login-role-${record.role.toLowerCase()}">${record.role}</span> - ${record.ip} (${record.location})</span>
-                    <span style="color: var(--muted-text);">${localTime}</span>
-                `;
-                listElement.appendChild(listItem);
-            });
-            loginListContainer.innerHTML = '';
-            loginListContainer.appendChild(listElement);
-        }
-
-        // --- FUNGSI KELUAR ---
-        logoutButton.addEventListener('click', function() {
-            mainContent.style.display = 'none';
-            adminPanel.style.display = 'none';
-            passwordContainer.style.display = 'block';
-            passwordInput.value = '';
-            loginInfo.innerHTML = '';
-        });
-
         // --- LOGIKA APLIKASI VEO3 ---
         let selectedModel = 'veo3';
+
         const modelV3Buttons = document.getElementById('modelV3Buttons');
         const modelV3FastButtons = document.getElementById('modelV3FastButtons');
 
         function handleModelClick(e) {
             if (e.target && e.target.classList.contains('choice-btn')) {
+                // Clear active state from all buttons in both groups
                 modelV3Buttons.querySelectorAll('.choice-btn').forEach(btn => btn.classList.remove('active'));
                 modelV3FastButtons.querySelectorAll('.choice-btn').forEach(btn => btn.classList.remove('active'));
+                
+                // Set the clicked button as active
                 e.target.classList.add('active');
                 selectedModel = e.target.dataset.value;
             }
@@ -593,12 +222,13 @@
 
             spinner.style.display = 'block';
             resultDiv.style.display = 'none';
+            resultDiv.innerHTML = ''; // Clear previous results
 
             if (!prompt) {
                 showNotification('Silakan masukkan prompt.');
                 spinner.style.display = 'none';
                 resultDiv.style.display = 'flex';
-                resultDiv.innerHTML = `<p>Proses dibatalkan. Prompt diperlukan.</p>`;
+                resultDiv.innerHTML = `<p class="m-auto">Proses dibatalkan. Prompt diperlukan.</p>`;
                 return;
             }
             
@@ -607,7 +237,9 @@
 
         async function downloadVideo(videoUrl, filename) {
             try {
-                const response = await fetch(videoUrl);
+                // Using a CORS proxy for potentially cross-origin video URLs
+                const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+                const response = await fetch(proxyUrl + videoUrl);
                 if (!response.ok) throw new Error('Network response was not ok.');
                 const blob = await response.blob();
                 const url = window.URL.createObjectURL(blob);
@@ -621,95 +253,26 @@
                 document.body.removeChild(a);
             } catch (error) {
                 console.error('Download failed, opening in new tab as fallback:', error);
+                showNotification('Download gagal. Coba klik kanan pada video dan "Simpan video sebagai...".');
                 window.open(videoUrl, '_blank');
             }
-        }
-
-        // --- FUNGSI API BARU ---
-        const API_CONFIG = {
-            apiKey: "fgsiapi-1e3e18a6-6d",
-            bypassUrl: "https://fgsi.koyeb.app/api/tools/bypasscf/v5",
-            createUrl: "https://aiarticle.erweima.ai/api/v1/secondary-page/api/create",
-            statusUrl: "https://aiarticle.erweima.ai/api/v1/secondary-page/api/",
-            referer: "https://lunaai.video/",
-            origin: "https://lunaai.video",
-            sitekey: "0x4AAAAAAAdJZmNxW54o-Gvd"
-        };
-
-        async function runSingleGeneration(prompt, model) {
-            return new Promise(async (resolve, reject) => {
-                try {
-                    // 1. Bypass CF
-                    const bypassParams = new URLSearchParams({
-                        apikey: API_CONFIG.apiKey,
-                        url: "https://lunaai.video/features/v3-fast",
-                        sitekey: API_CONFIG.sitekey,
-                        mode: "turnstile-min"
-                    });
-                    const bypassRes = await fetch(`${API_CONFIG.bypassUrl}?${bypassParams}`);
-                    const bypassData = await bypassRes.json();
-                    const token = bypassData?.data?.token;
-                    if (!token) return reject(new Error("Gagal mendapatkan token bypass"));
-
-                    // 2. Create Video Task
-                    const payload = {
-                        prompt, model: model === 'veo3' ? 'veo-3' : 'veo-3-fast',
-                        imgUrls: [], quality: "720p", duration: 8, autoSoundFlag: false,
-                        soundPrompt: "", autoSpeechFlag: false, speechPrompt: "",
-                        speakerId: "Auto", aspectRatio: "16:9", secondaryPageId: 1946,
-                        channel: "VEO3", source: "lunaai.video", type: "features",
-                        watermarkFlag: false, privateFlag: false, isTemp: true, vipFlag: false,
-                    };
-                    const createHeaders = {
-                        "Content-Type": "application/json",
-                        "origin": API_CONFIG.origin, "referer": API_CONFIG.referer,
-                        "verify": token, "uniqueid": btoa(Date.now()),
-                    };
-                    const createRes = await fetch(API_CONFIG.createUrl, {
-                        method: 'POST', headers: createHeaders, body: JSON.stringify(payload)
-                    });
-                    const createData = await createRes.json();
-                    const recordId = createData?.data?.recordId;
-                    if (!recordId) return reject(new Error("Gagal mendapatkan Record ID"));
-
-                    // 3. Poll for Status
-                    const interval = setInterval(async () => {
-                        try {
-                            const statusRes = await fetch(API_CONFIG.statusUrl + recordId, {
-                                headers: { "origin": API_CONFIG.origin, "referer": API_CONFIG.referer }
-                            });
-                            const statusData = await statusRes.json();
-                            const data = statusData?.data;
-
-                            if (data.state === "success" && data.completeData) {
-                                clearInterval(interval);
-                                resolve(JSON.parse(data.completeData));
-                            } else if (data.failCode || data.failMsg) {
-                                clearInterval(interval);
-                                reject(new Error(`[Gagal] ${data.failCode} ${data.failMsg}`));
-                            }
-                        } catch (err) {
-                            clearInterval(interval);
-                            reject(err);
-                        }
-                    }, 5000); // Check every 5 seconds
-
-                } catch (err) {
-                    reject(err);
-                }
-            });
         }
 
         async function callApiGenerate(finalPrompt) {
             const resultDiv = document.getElementById('result');
             const spinner = document.getElementById('loadingSpinner');
+            const apiKey = 'MELvQtx7BG';
 
-            const promise1 = runSingleGeneration(finalPrompt, selectedModel);
-            const promise2 = runSingleGeneration(finalPrompt, selectedModel);
+            let baseApiUrl = `https://api.ibeng.my.id/api/ai/${selectedModel}?query=${encodeURIComponent(finalPrompt)}&apikey=${apiKey}`;
+            
+            // Create two promises to call the API twice
+            const promise1 = fetch(baseApiUrl).then(res => res.ok ? res.json() : Promise.reject(res.json()));
+            const promise2 = fetch(baseApiUrl).then(res => res.ok ? res.json() : Promise.reject(res.json()));
 
             try {
                 const results = await Promise.allSettled([promise1, promise2]);
-                resultDiv.innerHTML = '';
+                
+                resultDiv.innerHTML = ''; // Clear placeholder text
 
                 results.forEach((result, index) => {
                     const videoWrapper = document.createElement('div');
@@ -719,29 +282,36 @@
                     title.textContent = `Hasil Video ${index + 1}`;
                     videoWrapper.appendChild(title);
 
-                    if (result.status === 'fulfilled' && result.value?.videoUrl) {
+                    if (result.status === 'fulfilled' && result.value?.data?.data?.video_url) {
                         const video = document.createElement('video');
-                        video.src = result.value.videoUrl;
+                        video.src = result.value.data.data.video_url;
                         video.controls = true;
                         video.loop = true;
-                        video.autoplay = true;
-                        video.muted = true;
+                        video.style.objectFit = 'contain';
                         
                         const actionsWrapper = document.createElement('div');
                         actionsWrapper.className = 'actions-wrapper';
+
                         const downloadBtn = document.createElement('button');
-                        downloadBtn.className = 'action-btn';
-                        downloadBtn.textContent = 'Download';
+                        downloadBtn.className = 'btn btn-sm btn-outline-secondary action-btn';
+                        downloadBtn.innerHTML = '<i class="fa-solid fa-download me-2"></i>Download';
                         downloadBtn.onclick = () => downloadVideo(video.src, `video_hasil_${index + 1}.mp4`);
+
                         actionsWrapper.appendChild(downloadBtn);
                         
                         videoWrapper.appendChild(video);
                         videoWrapper.appendChild(actionsWrapper);
 
                     } else {
-                        const errorMessage = result.reason?.message || 'Gagal memuat video.';
+                        // Handle both network errors and API errors gracefully
+                        let errorMessage = 'Gagal memuat video.';
+                        if (result.reason) {
+                           // Try to parse a meaningful message from the API error
+                           const errorBody = result.reason;
+                           errorMessage = errorBody?.message || errorBody?.error || JSON.stringify(errorBody);
+                        }
                         const errorP = document.createElement('p');
-                        errorP.className = 'error';
+                        errorP.className = 'text-danger';
                         errorP.textContent = `Error: ${errorMessage}`;
                         videoWrapper.appendChild(errorP);
                     }
@@ -749,13 +319,12 @@
                 });
 
             } catch (err) {
-                resultDiv.innerHTML = `<p class="error">Terjadi kesalahan tak terduga: ${err.message}</p>`;
+                resultDiv.innerHTML = `<p class="text-danger m-auto">Terjadi kesalahan tak terduga: ${err.message}</p>`;
             } finally {
                 spinner.style.display = 'none';
                 resultDiv.style.display = 'flex';
             }
         }
     </script>
-
 </body>
 </html>
