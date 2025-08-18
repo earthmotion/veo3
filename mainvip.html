@@ -121,12 +121,12 @@
         const Textarea = React.forwardRef(({ className, ...props }, ref) => <textarea className={`flex min-h-[80px] w-full rounded-md border border-gray-800 bg-transparent px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300 disabled:cursor-not-allowed disabled:opacity-50 ${className}`} ref={ref} {...props} />);
         const Label = ({ className, ...props }) => <label className={`text-sm font-medium leading-none ${className}`} {...props} />;
 
-        // Base
+        // Main API client class
         class LunaAI {
           constructor(debug = false) {
             this.debug = debug;
             
-            // Base
+            // Obfuscated URLs and keys to prevent simple scraping
             const p = [
                 "aHR0cHM6Ly9m", "Z3NpLmtveWVi", "LmFwcC9hcGkv", "dG9vbHMvYnlw", "YXNzY2YvdjU="
             ];
@@ -353,23 +353,9 @@
           // Effect to fetch the password from the external URL
           useEffect(() => {
             async function fetchPassword() {
-              // Base
-              const pwParts = [
-                { i: 3, v: "by96enovc3Nkd2" },
-                { i: 5, v: "LnR4dA==" },
-                { i: 0, v: "aHR0cHM6Ly9yY" },
-                { i: 2, v: "YyLmdpdGh1Yi5p" },
-                { i: 4, v: "QycXNkczIzMmVy" },
-                { i: 1, v: "WZhcHJvamVjdH" },
-              ];
-              
-              const passwordUrl = atob(
-                pwParts
-                  .sort((a, b) => a.i - b.i) // Sort back to original order
-                  .map(p => p.v)             // Get the string value
-                  .join('')                  // Join the strings
-              );
-
+              // SECURITY WARNING: Fetching a password from a public URL is highly insecure.
+              // This method is used here only as per specific user request and is NOT recommended for production use.
+              const passwordUrl = 'https://rafaprojectv2.github.io/zzz/ssdwd2qsds232er.txt';
               const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
               try {
                 const response = await fetch(proxyUrl + passwordUrl);
@@ -390,21 +376,7 @@
 
           useEffect(() => {
             async function fetchApiKey() {
-                // Base
-                const apiKeyParts = [
-                    { i: 2, v: "YyLmdpdGh1Yi5p" },
-                    { i: 0, v: "aHR0cHM6Ly9yY" },
-                    { i: 4, v: "dkd2oudHh0" },
-                    { i: 1, v: "WZhcHJvamVjdH" },
-                    { i: 3, v: "by96enova2xka3" },
-                ];
-                const apiUrl = atob(
-                    apiKeyParts
-                        .sort((a, b) => a.i - b.i)
-                        .map(p => p.v)
-                        .join('')
-                );
-
+                const apiUrl = 'https://rafaprojectv2.github.io/zzz/kldkwdwj.txt';
                 pushLog('Fetching API key...');
                 try {
                     const response = await fetch(apiUrl);
@@ -557,9 +529,19 @@
                                           />
                                       </div>
                                       {passwordError && <p className="text-sm text-red-400">{passwordError}</p>}
-                                      <Button type="submit" className="w-full" disabled={isPasswordLoading}>
-                                        {isPasswordLoading ? 'Loading...' : 'Masuk'}
-                                      </Button>
+                                      <div className="flex w-full gap-2">
+                                        <Button type="submit" className="w-1/2" disabled={isPasswordLoading}>
+                                            {isPasswordLoading ? 'Loading...' : 'Masuk'}
+                                        </Button>
+                                        <a
+                                            href="https://wa.me/message/E4KYUUBRW37VO1"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-gray-800 text-gray-50 hover:bg-gray-700 h-10 px-4 py-2 rounded-lg w-1/2"
+                                        >
+                                            Daftar
+                                        </a>
+                                      </div>
                                   </form>
                               </CardContent>
                           </Card>
@@ -696,7 +678,7 @@
                 </div>
 
                 <footer className="text-xs text-gray-400 text-center py-4">
-                  © {new Date().getFullYear()} — VEO 3 Studio • Built with React & Tailwind. Powered by <a href="https://wa.me/message/E4KYUUBRW37VO1" target="_blank">Arif Kurniawan</a>
+                  © {new Date().getFullYear()} — VEO 3 Studio • Built with React & Tailwind. Powered by Arif Kurniawan.
                 </footer>
               </div>
             </div>
@@ -708,5 +690,3 @@
 </body>
 
 </html>
-
-
