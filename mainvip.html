@@ -125,10 +125,26 @@
         class LunaAI {
           constructor(debug = false) {
             this.debug = debug;
-            this.bypassUrl = "https://fgsi.koyeb.app/api/tools/bypasscf/v5";
-            this.createUrl = "https://aiarticle.erweima.ai/api/v1/secondary-page/api/create";
-            this.statusUrl = "https://aiarticle.erweima.ai/api/v1/secondary-page/api/";
-            this.sitekey = "0x4AAAAAAAdJZmNxW54o-Gvd"; 
+            
+            // Obfuscated URLs and keys to prevent simple scraping
+            const p = [
+                "aHR0cHM6Ly9m", "Z3NpLmtveWVi", "LmFwcC9hcGkv", "dG9vbHMvYnlw", "YXNzY2YvdjU="
+            ];
+            const p_ = [
+                "aHR0cHM6Ly9h", "aWFydGljbGUu", "ZXJ3ZWltYS5h", "aS9hcGkvdjEv", "c2Vjb25kYXJ5", "LXBhZ2UvYXBp", "L2NyZWF0ZQ=="
+            ];
+            const p__ = [
+                "aHR0cHM6Ly9h", "aWFydGljbGUu", "ZXJ3ZWltYS5h", "aS9hcGkvdjEv", "c2Vjb25kYXJ5", "LXBhZ2UvYXBp", "Lw=="
+            ];
+            const p___ = [
+                "MHg0QUFBQUFB", "QWRKWm1OeFc1", "NG8tR3Zk"
+            ];
+
+            this.bypassUrl = atob(p.join(''));
+            this.createUrl = atob(p_.join(''));
+            this.statusUrl = atob(p__.join(''));
+            this.sitekey = atob(p___.join(''));
+
             this._interval = null;
           }
 
@@ -173,7 +189,7 @@
           }
 
           run({
-            apikey = "fgsiapi-1e3e18a6-6d",
+            apikey,
             prompt, imgUrls = [], quality = "720p", duration = 8,
             aspectRatio = "16:9", secondaryPageId = 1946, channel = "VEO3",
             source = "lunaai.video", type = "features", watermarkFlag = false,
@@ -182,6 +198,9 @@
           }) {
             return new Promise(async (resolve, reject) => {
               try {
+                if (!apikey) {
+                  return reject(new Error("API Key is missing."));
+                }
                 const token = await this.bypassCF("https://lunaai.video/features/v3-fast", apikey);
                 if (!token) return reject(new Error("Bypass token failed. Please ensure the CORS proxy is active."));
                 this.debug && console.log("[🛡️ Bypass Success] Token:", token);
@@ -314,15 +333,46 @@
           const [videoUrls, setVideoUrls] = useState([]);
           const [error, setError] = useState("");
           const [downloading, setDownloading] = useState(-1);
+          const [apiKey, setApiKey] = useState("");
+          const [isApiLoading, setIsApiLoading] = useState(true);
 
           const clientRef = useRef(null);
-          const hardcodedApiKey = "fgsiapi-1e3e18a6-6d";
-
-          useEffect(() => () => clientRef.current?.cancel(), []);
-
+          
           function pushLog(line) {
             setLogs((prev) => [...prev, `${new Date().toLocaleTimeString()} — ${line}`].slice(-200));
           }
+
+          useEffect(() => {
+            async function fetchApiKey() {
+                const apiUrl = 'https://earthmotion.github.io/veo3/api.js';
+                pushLog(`Fetching API key from ${apiUrl}...`);
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) {
+                        throw new Error(`Network response was not ok, status: ${response.status}`);
+                    }
+                    const scriptContent = await response.text();
+                    // Use a more general regular expression to find the API key.
+                    const match = scriptContent.match(/(fgsiapi-[a-f0-9-]+)/);
+                    if (match && match[1]) {
+                        setApiKey(match[1]);
+                        pushLog("✅ API Key loaded successfully.");
+                    } else {
+                        throw new Error("Could not find a valid API key in the fetched script.");
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch API key:", error);
+                    const errorMessage = `Failed to load API key. Please check your internet connection and refresh the page. Details: ${error.message}`;
+                    setError(errorMessage);
+                    pushLog(`❌ Error: ${errorMessage}`);
+                } finally {
+                    setIsApiLoading(false);
+                }
+            }
+            fetchApiKey();
+          }, []);
+
+          useEffect(() => () => clientRef.current?.cancel(), []);
 
           const imgUrls = useMemo(
             () => imgUrlsRaw.split(/\n|,/).map((s) => s.trim()).filter(Boolean),
@@ -330,6 +380,10 @@
           );
 
           async function handleRun() {
+            if (!apiKey) {
+                setError("API Key is not loaded. Cannot start generation.");
+                return;
+            }
             setBusy(true);
             setError("");
             setVideoUrls([]);
@@ -342,7 +396,7 @@
               for (let i = 0; i < 2; i++) {
                 pushLog(`Generating video ${i + 1} of 2...`);
                 const res = await app.run({
-                  apikey: hardcodedApiKey, prompt,
+                  apikey: apiKey, prompt,
                   imgUrls: tab === "image" ? imgUrls : [],
                   quality, model, vipFlag: true,
                   onPoll: (data) => {
@@ -475,8 +529,9 @@
                         </div>
 
                       <div className="flex items-center gap-3 pt-2">
-                        <Button onClick={handleRun} disabled={busy} className="gap-2 px-5">
-                          {busy ? <Icon name="Loader2" className="h-4 w-4 animate-spin" /> : <Icon name="Video" className="h-4 w-4" />} Generate
+                        <Button onClick={handleRun} disabled={busy || isApiLoading || !apiKey} className="gap-2 px-5 w-36">
+                          {isApiLoading ? <Icon name="Loader2" className="h-4 w-4 animate-spin" /> : (busy ? <Icon name="Loader2" className="h-4 w-4 animate-spin" /> : <Icon name="Video" className="h-4 w-4" />)}
+                          {isApiLoading ? 'Loading API...' : (busy ? 'Generating...' : 'Generate')}
                         </Button>
                         <Button onClick={handleCancel} disabled={!busy} variant="secondary" className="gap-2">
                           <Icon name="CircleStop" className="h-4 w-4" /> Cancel
