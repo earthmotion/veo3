@@ -457,14 +457,10 @@
 
 
     <script>
-        // --- PENGATURAN KREDENSIAL (Disamarkan menggunakan Base64) ---
-        // PERINGATAN: Ini BUKAN metode yang aman. Kredensial ini dapat dengan mudah
-        // di-decode oleh siapa saja yang melihat kode sumber halaman.
-        // Metode ini hanya untuk menyamarkan, bukan mengamankan.
-        const KATA_SANDI_USER_ENCODED = "dXNlcjEyMw=="; // hayozzz
-        const KATA_SANDI_ADMIN_ENCODED = "YXNvbG9sZTIwMTM="; // hayozzz
-        const API_KEY_ENCODED = 'TUVMdlF0eDdCRw=='; // hayozzz
-        const BASE_URL_ENCODED = 'aHR0cHM6Ly9hcGkuaWJlbmcubXkuaWQvYXBpL2FpLw=='; // hayozzz
+        // --- PENGATURAN KATA SANDI ---
+        // Kata sandi di-encode menggunakan Base64 untuk menyamarkannya
+        const KATA_SANDI_USER_ENCODED = "dXNlcjEyMw==";
+        const KATA_SANDI_ADMIN_ENCODED = "YXNvbG9sZTIwMTM=";
         
         // --- ELEMEN DOM ---
         const passwordForm = document.getElementById('password-form');
@@ -481,13 +477,16 @@
         // --- FUNGSI LOGIN ---
         passwordForm.addEventListener('submit', async function(event) {
             event.preventDefault(); 
-            // Encode input pengguna untuk membandingkannya dengan nilai yang disimpan
-            const kataSandiYangDimasukkan = btoa(passwordInput.value);
+            const kataSandiYangDimasukkan = passwordInput.value;
             let role = null;
 
-            if (kataSandiYangDimasukkan === KATA_SANDI_ADMIN_ENCODED) {
+            // Decode kata sandi sebelum membandingkan
+            const KATA_SANDI_USER = atob(KATA_SANDI_USER_ENCODED);
+            const KATA_SANDI_ADMIN = atob(KATA_SANDI_ADMIN_ENCODED);
+
+            if (kataSandiYangDimasukkan === KATA_SANDI_ADMIN) {
                 role = 'Admin';
-            } else if (kataSandiYangDimasukkan === KATA_SANDI_USER_ENCODED) {
+            } else if (kataSandiYangDimasukkan === KATA_SANDI_USER) {
                 role = 'User';
             }
 
@@ -651,15 +650,19 @@
             const resultDiv = document.getElementById('result');
             const spinner = document.getElementById('loadingSpinner');
             
-            // Decode kunci API dan URL dasar dari nilai yang disamarkan
-            const apiKey = atob(API_KEY_ENCODED);
-            const baseUrl = atob(BASE_URL_ENCODED);
+            // Base
+            const apiKeyEncoded = 'TUVMdlF0eDdCRw==';
+            const apiKey = atob(apiKeyEncoded);
 
-            // Buat URL API lengkap
-            let fullApiUrl = `${baseUrl}${selectedModel}?query=${encodeURIComponent(finalPrompt)}&apikey=${apiKey}`;
+            // Base
+            const encodedApiBase = 'aHR0cHM6Ly9hcGkuaWJlbmcubXkuaWQvYXBpL2FpLw==';
+            // Decode URL sebelum digunakan
+            const decodedApiBase = atob(encodedApiBase); 
             
-            const promise1 = fetch(fullApiUrl).then(res => res.ok ? res.json() : Promise.reject(res.json()));
-            const promise2 = fetch(fullApiUrl).then(res => res.ok ? res.json() : Promise.reject(res.json()));
+            let baseApiUrl = `${decodedApiBase}${selectedModel}?query=${encodeURIComponent(finalPrompt)}&apikey=${apiKey}`;
+            
+            const promise1 = fetch(baseApiUrl).then(res => res.ok ? res.json() : Promise.reject(res.json()));
+            const promise2 = fetch(baseApiUrl).then(res => res.ok ? res.json() : Promise.reject(res.json()));
 
             try {
                 const results = await Promise.allSettled([promise1, promise2]);
@@ -715,4 +718,3 @@
 
 </body>
 </html>
-
