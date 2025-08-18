@@ -132,32 +132,32 @@
     <!-- The root element where the React app will be mounted -->
     <div id="root"></div>
 
-    <!-- CORS Anywhere scripts to handle API requests -->
+    <!-- CORS Proxy script to handle API requests -->
     <script>
         // Script for XMLHttpRequest
         (function() {
-            var cors_api_host = 'cors-anywhere.herokuapp.com';
-            var cors_api_url = 'https://' + cors_api_host + '/';
+            // Using corsproxy.io which doesn't require a manual activation step.
+            var cors_api_url_prefix = 'https://corsproxy.io/?';
             var slice = [].slice;
             var origin = window.location.protocol + '//' + window.location.host;
             var open = XMLHttpRequest.prototype.open;
+
             XMLHttpRequest.prototype.open = function() {
                 var args = slice.call(arguments);
-                var targetOrigin = /^https?:\/\/([^\/]+)/i.exec(args[1]);
-                if (targetOrigin && targetOrigin[0].toLowerCase() !== origin &&
-                    targetOrigin[1] !== cors_api_host) {
-                    args[1] = cors_api_url + args[1];
+                var requestUrl = args[1];
+
+                // Check if the request is for an external domain.
+                var targetOrigin = /^https?:\/\/([^\/]+)/i.exec(requestUrl);
+                if (targetOrigin && targetOrigin[0].toLowerCase() !== origin) {
+                    // Prepend the proxy URL, ensuring we don't proxy an already proxied URL.
+                    // The target URL needs to be URI-encoded for this proxy.
+                    if (typeof requestUrl === 'string' && !requestUrl.startsWith('https://corsproxy.io')) {
+                         args[1] = cors_api_url_prefix + encodeURIComponent(requestUrl);
+                    }
                 }
                 return open.apply(this, args);
             };
         })();
-
-        // Script for jQuery Ajax
-        jQuery.ajaxPrefilter(function(options) {
-            if (options.crossDomain && jQuery.support.cors) {
-                options.url = 'https://earthmotion.github.io/veo3/vip.html' + options.url;
-            }
-        });
     </script>
 
     <!-- The React application code, transpiled by Babel -->
@@ -402,7 +402,7 @@
               console.error(e);
               let errorMessage = e?.message || String(e);
               if (e.isAxiosError) { errorMessage = `Network request failed: ${e.message}.`; if (e.response) { errorMessage += ` (Status: ${e.response.status} ${e.response.statusText})`; } }
-              const fullError = `${errorMessage} This can be caused by two main issues: 1) The CORS proxy needs activation. Please visit cors-anywhere.herokuapp.com, request access, and try again. 2) Your API Key may be invalid or expired.`;
+              const fullError = `${errorMessage} This can be caused by two main issues: 1) The public CORS proxy may be overloaded or temporarily down. Please try again later. 2) Your API Key may be invalid or expired.`;
               setError(fullError); pushLog(`❌ Error: ${errorMessage}`);
             } finally { setBusy(false); }
           }
@@ -412,7 +412,7 @@
           async function handleDownload(url, index) {
               setDownloading(index); setError('');
               try {
-                  const response = await fetch(`https://cors-anywhere.herokuapp.com/${url}`);
+                  const response = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`);
                   if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
                   const blob = await response.blob();
                   const objectUrl = window.URL.createObjectURL(blob);
@@ -501,7 +501,7 @@
                                     <button onClick={handleRun} disabled={busy || isApiLoading || !apiKey} className="btn btn-primary"><i className={`fa-solid ${busy || isApiLoading ? 'fa-spinner fa-spin' : 'fa-play'} me-2`}></i>{isApiLoading ? 'Memuat API...' : (busy ? 'Membuat...' : 'Buat Video')}</button>
                                     <button onClick={handleCancel} disabled={!busy} className="btn btn-secondary"><i className="fa-solid fa-stop me-2"></i>Batal</button>
                                 </div>
-                                <div className="alert alert-warning small"><p className="fw-bold mb-1">Diperlukan Tindakan: Proxy Jaringan</p><p className="mb-0">Aplikasi ini menggunakan proxy publik. Jika Anda melihat kesalahan jaringan, silakan <a href="https://cors-anywhere.herokuapp.com/" target="_blank" rel="noopener noreferrer" className="alert-link">kunjungi halaman aktivasi proxy</a>, klik tombol untuk meminta akses, lalu coba lagi.</p></div>
+                                <div className="alert alert-info small"><p className="fw-bold mb-1">Catatan Jaringan</p><p className="mb-0">Aplikasi ini menggunakan proxy publik untuk mengakses API. Jika Anda mengalami kesalahan jaringan, ini mungkin disebabkan oleh lalu lintas proxy yang padat. Silakan coba lagi setelah beberapa saat.</p></div>
                             </div>
                         </div>
                     </div>
