@@ -420,6 +420,7 @@
             <div id="login-list-container"></div>
         </div>
 
+        <!-- Fitur Utama untuk User -->
         <div class="veo-container">
             <main class="veo-main">
                 <section class="card">
@@ -457,8 +458,7 @@
 
 
     <script>
-        // --- PENGATURAN KATA SANDI ---
-        // Kata sandi di-encode menggunakan Base64 untuk menyamarkannya
+        // Base
         const KATA_SANDI_USER_ENCODED = "dXNlcjEyMw==";
         const KATA_SANDI_ADMIN_ENCODED = "YXNvbG9sZTIwMTM=";
         
@@ -473,6 +473,8 @@
         const loginInfo = document.getElementById('login-info');
         const adminPanel = document.getElementById('admin-panel');
         const loginListContainer = document.getElementById('login-list-container');
+        const veoContainer = document.querySelector('.veo-container');
+        const footer = document.querySelector('footer');
 
         // --- FUNGSI LOGIN ---
         passwordForm.addEventListener('submit', async function(event) {
@@ -510,10 +512,16 @@
                     // Tampilkan detail login
                     loginInfo.innerHTML = `Masuk sebagai: <strong>${role}</strong> | IP: ${ip} (${location})`;
                     
-                    // Jika admin, tampilkan panel admin
+                    // Logika untuk menampilkan konten berdasarkan peran
                     if (role === 'Admin') {
                         adminPanel.style.display = 'block';
+                        veoContainer.style.display = 'none'; // Sembunyikan fitur utama untuk admin
+                        footer.style.display = 'none'; // Sembunyikan footer untuk admin
                         displayLoginList();
+                    } else { // Peran adalah 'User'
+                        adminPanel.style.display = 'none'; // Sembunyikan panel admin untuk user
+                        veoContainer.style.display = 'flex'; // Tampilkan fitur utama untuk user
+                        footer.style.display = 'block'; // Tampilkan footer untuk user
                     }
 
                 } catch (error) {
@@ -650,11 +658,11 @@
             const resultDiv = document.getElementById('result');
             const spinner = document.getElementById('loadingSpinner');
             
-            // Base
-            const apiKeyEncoded = 'TUVMdlF0eDdCRw==';
+            // API Key di-encode menggunakan Base64
+            const apiKeyEncoded = 'TUVMdlF0eDdCRw=='; // "MELvQtx7BG"
             const apiKey = atob(apiKeyEncoded);
 
-            // Base
+            // URL API di-encode menggunakan Base64 untuk disamarkan
             const encodedApiBase = 'aHR0cHM6Ly9hcGkuaWJlbmcubXkuaWQvYXBpL2FpLw==';
             // Decode URL sebelum digunakan
             const decodedApiBase = atob(encodedApiBase); 
