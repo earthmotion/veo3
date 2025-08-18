@@ -1,600 +1,660 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import axios from "axios";
-import { motion } from "framer-motion";
-import { Loader2, Video, Image as ImageIcon, Link as LinkIcon, Settings2, Download, CircleStop, CircleCheck, CircleX, Info } from "lucide-react";
-
-// Helper components (simulating shadcn/ui for this self-contained file)
-const Card = ({ className, ...props }) => <div className={`bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm ${className}`} {...props} />;
-const CardHeader = ({ className, ...props }) => <div className={`p-6 ${className}`} {...props} />;
-const CardTitle = ({ className, ...props }) => <h3 className={`text-lg font-semibold tracking-tight ${className}`} {...props} />;
-const CardDescription = ({ className, ...props }) => <p className={`text-sm text-gray-500 dark:text-gray-400 ${className}`} {...props} />;
-const CardContent = ({ className, ...props }) => <div className={`p-6 pt-0 ${className}`} {...props} />;
-const CardFooter = ({ className, ...props }) => <div className={`flex items-center p-6 pt-0 ${className}`} {...props} />;
-const Button = React.forwardRef(({ className, variant = 'primary', size = 'md', ...props }, ref) => (
-    <button
-        className={`inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${
-            {
-                primary: 'bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200',
-                secondary: 'bg-gray-100 text-gray-900 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-50 dark:hover:bg-gray-700',
-                ghost: 'hover:bg-gray-100 dark:hover:bg-gray-800',
-                destructive: 'bg-red-500 text-white hover:bg-red-600'
-            }[variant]
-        } ${
-            {
-                sm: 'h-9 px-3 rounded-md',
-                md: 'h-10 px-4 py-2 rounded-lg',
-            }[size]
-        } ${className}`}
-        ref={ref}
-        {...props}
-    />
-));
-const Input = React.forwardRef(({ className, ...props }, ref) => <input className={`flex h-10 w-full rounded-md border border-gray-200 dark:border-gray-800 bg-transparent px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 dark:placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 dark:focus-visible:ring-gray-300 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${className}`} ref={ref} {...props} />);
-const Textarea = React.forwardRef(({ className, ...props }, ref) => <textarea className={`flex min-h-[80px] w-full rounded-md border border-gray-200 dark:border-gray-800 bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-gray-500 dark:placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 dark:focus-visible:ring-gray-300 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${className}`} ref={ref} {...props} />);
-const Label = ({ className, ...props }) => <label className={`text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 ${className}`} {...props} />;
-const Tabs = ({ className, ...props }) => <div className={className} {...props} />;
-const TabsList = ({ className, ...props }) => <div className={`inline-flex h-10 items-center justify-center rounded-md bg-gray-100 dark:bg-gray-800 p-1 text-gray-500 dark:text-gray-400 ${className}`} {...props} />;
-const TabsTrigger = ({ className, active, ...props }) => <button className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${active ? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-50 shadow-sm' : ''} ${className}`} {...props} />;
-const TabsContent = ({ className, ...props }) => <div className={`mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${className}`} {...props} />;
-const Select = ({ children, value, onValueChange }) => <div className="relative">{children}</div>;
-const SelectTrigger = ({ id, children, className }) => <button id={id} className={`flex h-10 w-full items-center justify-between rounded-md border border-gray-200 dark:border-gray-800 bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}>{children}</button>;
-const SelectValue = ({ placeholder }) => <span>{placeholder}</span>;
-const SelectContent = ({ children, className }) => <div className={`absolute z-50 min-w-[8rem] overflow-hidden rounded-md border bg-white dark:bg-gray-900 text-popover-foreground shadow-md animate-in fade-in-80 ${className}`}>{children}</div>;
-const SelectItem = ({ value, children, className }) => <div className={`relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 ${className}`}>{children}</div>;
-const Switch = ({ checked, onCheckedChange, ...props }) => <button type="button" role="switch" aria-checked={checked} onClick={() => onCheckedChange(!checked)} className={`${checked ? 'bg-gray-900 dark:bg-gray-50' : 'bg-gray-200 dark:bg-gray-800'} relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2`} {...props}><span className={`${checked ? 'translate-x-5' : 'translate-x-0'} pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}></span></button>;
-const Separator = ({ orientation = 'horizontal', className }) => <div className={`${orientation === 'horizontal' ? 'h-[1px] w-full' : 'h-full w-[1px]'} shrink-0 bg-gray-200 dark:bg-gray-800 ${className}`} />;
-
-
-// Main API client class
-class LunaAI {
-  constructor(debug = false) {
-    this.debug = debug;
-    this.proxy = "https://cors-anywhere.herokuapp.com/";
-    this.bypassUrl = "https://fgsi.koyeb.app/api/tools/bypasscf/v5";
-    this.createUrl = "https://aiarticle.erweima.ai/api/v1/secondary-page/api/create";
-    this.statusUrl = "https://aiarticle.erweima.ai/api/v1/secondary-page/api/";
-    this.sitekey = "0x4AAAAAAAdJZmNxW54o-Gvd"; 
-    this._interval = null;
-  }
-
-  cancel() {
-    if (this._interval) {
-      clearInterval(this._interval);
-      this._interval = null;
-    }
-  }
-
-  async bypassCF(url, apikey) {
-    const proxyUrl = `${this.proxy}${this.bypassUrl}`;
-    const res = await axios.get(proxyUrl, {
-      params: { apikey, url, sitekey: this.sitekey, mode: "turnstile-min" },
-      headers: { 'x-requested-with': 'XMLHttpRequest' }
-    });
-    return res?.data?.data?.token;
-  }
-
-  async createVideo(token, payload) {
-    const proxyUrl = `${this.proxy}${this.createUrl}`;
-    const headers = {
-      'verify': token,
-      'uniqueid': (typeof window !== "undefined" ? window.btoa(String(Date.now())) : "") || "",
-      'x-requested-with': 'XMLHttpRequest'
-    };
-    const res = await axios.post(proxyUrl, payload, { headers });
-    return res?.data?.data?.recordId;
-  }
-
-  async checkStatus(recordId) {
-    const proxyUrl = `${this.proxy}${this.statusUrl}${recordId}`;
-    const res = await axios.get(proxyUrl, {
-        headers: { 'x-requested-with': 'XMLHttpRequest' }
-    });
-    return res?.data?.data;
-  }
-
-  run({
-    apikey = "your apikey",
-    prompt,
-    imgUrls = [],
-    quality = "720p",
-    duration = 8,
-    autoSoundFlag = false,
-    soundPrompt = "",
-    autoSpeechFlag = false,
-    speechPrompt = "",
-    speakerId = "Auto",
-    aspectRatio = "16:9",
-    secondaryPageId = 1946,
-    channel = "VEO3",
-    source = "lunaai.video",
-    type = "features",
-    watermarkFlag = false,
-    privateFlag = false,
-    isTemp = true,
-    vipFlag = false,
-    model = "veo-3-fast",
-    onPoll,
-  }) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const token = await this.bypassCF("https://lunaai.video/features/v3-fast", apikey);
-        if (!token) return reject(new Error("Bypass token failed. Please ensure the CORS proxy is active."));
-        this.debug && console.log("[🛡️ Bypass Success] Token:", token);
-
-        const payload = {
-          prompt, imgUrls, quality, duration, autoSoundFlag, soundPrompt,
-          autoSpeechFlag, speechPrompt, speakerId, aspectRatio, secondaryPageId,
-          channel, source, type, watermarkFlag, privateFlag, isTemp, vipFlag, model,
-        };
-
-        const recordId = await this.createVideo(token, payload);
-        if (!recordId) return reject(new Error("Failed to get a Record ID. The API may be down or the request was blocked."));
-        this.debug && console.log("[🎬 Video Requested] Record ID:", recordId);
-
-        this._interval = setInterval(async () => {
-          try {
-            const data = await this.checkStatus(recordId);
-            onPoll?.(data);
-            if (data?.state === "success" && data?.completeData) {
-              clearInterval(this._interval);
-              this._interval = null;
-              const result = JSON.parse(data.completeData);
-              this.debug && console.log("[✅ Success]");
-              resolve(result);
-            } else if (data?.failCode || data?.failMsg) {
-              clearInterval(this._interval);
-              this._interval = null;
-              reject(new Error(`[❌ Failed] ${data.failCode || ""} ${data.failMsg || ""}`));
-            }
-          } catch (err) {
-            clearInterval(this._interval);
-            this._interval = null;
-            reject(err);
-          }
-        }, 5000);
-      } catch (err) {
-        reject(err);
-      }
-    });
-  }
-}
-
-// Utility: Attempt to discover a video URL within arbitrary result JSON
-function guessVideoUrl(obj) {
-  if (!obj) return undefined;
-  
-  let finalUrl = undefined;
-
-  const candidates = [
-    obj.video_url, obj.videoUrl, 
-    obj.image_url, obj.imageUrl, 
-    obj.url, obj.downloadUrl,
-    obj?.video?.url, obj?.data?.videoUrl, obj?.data?.url,
-  ];
-  
-  for (const c of candidates) {
-    if (typeof c === "string" && c.startsWith("http")) {
-      finalUrl = c;
-      break;
-    }
-  }
-
-  if (!finalUrl) {
-      try {
-        const queue = [obj];
-        while (queue.length > 0 && !finalUrl) {
-          const cur = queue.shift();
-          if (typeof cur === 'string' && cur.startsWith('http') && (cur.includes('.mp4') || cur.includes('.jpg') || cur.includes('.png'))) {
-              finalUrl = cur;
-              break;
-          }
-          if (cur && typeof cur === 'object') {
-            for (const v of Object.values(cur)) {
-                queue.push(v);
-            }
-          }
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VEO 3 Studio - Text/Image to Video</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.8/axios.min.js"></script>
+    <style>
+        /* Simple transition for smooth appearance */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
         }
-      } catch (e) {
-        console.error("Deep URL search failed:", e);
-      }
-  }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Custom scrollbar for log area */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #1f2937; /* gray-800 */
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #4b5563; /* gray-600 */
+            border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #6b7280; /* gray-500 */
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-black text-gray-900 dark:text-gray-100 min-h-screen font-sans">
 
-  if (finalUrl) {
-      let modifiedUrl = finalUrl.replace(/_watermarked/g, '');
-      modifiedUrl = modifiedUrl.replace(/\.(jpg|jpeg|png|webp)(\?.*)?$/i, ".mp4");
-      return modifiedUrl;
-  }
+    <div id="app" class="mx-auto max-w-6xl p-4 sm:p-6 space-y-6">
+        <!-- Header -->
+        <header class="flex items-center justify-between fade-in">
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">VEO 3 Studio</h1>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Text-to-Video & Image-to-Video (LunaAI, VEO-3)</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <a href="https://fgsi.koyeb.app" target="_blank" rel="noreferrer" class="text-xs underline">fgsi.koyeb.app</a>
+                <div class="h-6 w-[1px] shrink-0 bg-gray-200 dark:bg-gray-800"></div>
+                <a href="https://lunaai.video" target="_blank" rel="noreferrer" class="text-xs underline">lunaai.video</a>
+            </div>
+        </header>
 
-  return undefined;
-}
-
-function Field({ label, htmlFor, children, hint }) {
-  return (
-    <div className="space-y-2">
-      <Label htmlFor={htmlFor} className="text-sm font-medium">{label}</Label>
-      {children}
-      {hint ? <p className="text-xs text-gray-500 dark:text-gray-400">{hint}</p> : null}
-    </div>
-  );
-}
-
-// New Status Display Component
-function StatusDisplay({ logs, busy, error, videoUrl }) {
-    const latestLog = logs.length > 0 ? logs[logs.length - 1] : "";
-    const statusText = latestLog.split('—')[1]?.trim() || "Menunggu untuk memulai...";
-    const progressMatch = latestLog.match(/\((\d+)%\)/);
-    const progress = progressMatch ? parseInt(progressMatch[1], 10) : 0;
-
-    let icon, colorClass, displayStatusText;
-
-    if (error) {
-        icon = <CircleX className="h-12 w-12 text-red-500" />;
-        colorClass = "bg-red-500";
-        displayStatusText = "Terjadi Kesalahan";
-    } else if (videoUrl) {
-        icon = <CircleCheck className="h-12 w-12 text-green-500" />;
-        colorClass = "bg-green-500";
-        displayStatusText = "Video Berhasil Dibuat!";
-    } else if (busy) {
-        icon = <Loader2 className="h-12 w-12 text-blue-500 animate-spin" />;
-        colorClass = "bg-blue-500";
-        displayStatusText = statusText;
-    } else {
-        icon = <Info className="h-12 w-12 text-gray-500" />;
-        colorClass = "bg-gray-500";
-        displayStatusText = logs.length > 0 ? "Dibatalkan" : "Siap untuk memulai";
-    }
-
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Status Proses</CardTitle>
-                <CardDescription>Perkembangan pembuatan video secara real-time</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="flex flex-col items-center text-center space-y-4 pt-4">
-                    <motion.div
-                        key={displayStatusText}
-                        initial={{ scale: 0.5, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 15 }}
-                    >
-                        {icon}
-                    </motion.div>
-                    <p className="font-medium text-lg h-6">{displayStatusText}</p>
-                    <div className="w-full bg-gray-200 rounded-full h-3 dark:bg-gray-700 overflow-hidden">
-                        <motion.div
-                            className={`h-3 rounded-full ${colorClass} transition-colors duration-500`}
-                            initial={{ width: '0%' }}
-                            animate={{ width: `${videoUrl ? 100 : progress}%` }}
-                            transition={{ duration: 0.8, ease: "easeInOut" }}
-                        />
-                    </div>
-                    <div className="text-xs font-mono space-y-1 w-full text-left bg-gray-100 dark:bg-gray-800/50 p-3 rounded-lg h-28 overflow-auto">
-                        {logs.length > 0 ? (
-                            logs.slice(-5).map((l, i) => <div key={i} className="whitespace-pre-wrap break-all">{l}</div>)
-                        ) : (
-                            <div className="text-gray-500 dark:text-gray-400">Log akan tampil di sini…</div>
-                        )}
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
-    );
-}
-
-
-export default function App() {
-  const [tab, setTab] = useState("text");
-  const [apiKey, setApiKey] = useState("fgsiapi-1e3e18a6-6d");
-  const [prompt, setPrompt] = useState("A majestic lion roaring on a rocky outcrop at sunset");
-  const [imgUrlsRaw, setImgUrlsRaw] = useState("");
-  const [quality, setQuality] = useState("720p");
-  const [duration, setDuration] = useState(8);
-  const [aspect, setAspect] = useState("16:9");
-  const [model, setModel] = useState("veo-3-fast");
-  const [autoSound, setAutoSound] = useState(false);
-  const [soundPrompt, setSoundPrompt] = useState("");
-  const [autoSpeech, setAutoSpeech] = useState(false);
-  const [speechPrompt, setSpeechPrompt] = useState("");
-  const [speakerId, setSpeakerId] = useState("Auto");
-  const [watermark, setWatermark] = useState(false);
-  const [isPrivate, setIsPrivate] = useState(false);
-  const [vipFlag, setVipFlag] = useState(true);
-
-  const [busy, setBusy] = useState(false);
-  const [logs, setLogs] = useState([]);
-  const [result, setResult] = useState(null);
-  const [videoUrl, setVideoUrl] = useState("");
-  const [error, setError] = useState("");
-  const [showAdvanced, setShowAdvanced] = useState(false);
-
-  const clientRef = useRef(null);
-
-  useEffect(() => () => clientRef.current?.cancel(), []);
-
-  function pushLog(line) {
-    setLogs((prev) => [...prev, `${new Date().toLocaleTimeString()} — ${line}`].slice(-200));
-  }
-
-  const imgUrls = useMemo(
-    () => imgUrlsRaw.split(/\n|,/).map((s) => s.trim()).filter(Boolean),
-    [imgUrlsRaw]
-  );
-
-  async function handleRun() {
-    setBusy(true);
-    setError("");
-    setResult(null);
-    setVideoUrl("");
-    setLogs([]);
-
-    const app = new LunaAI(true); // Enable debug logs
-    clientRef.current = app;
-
-    try {
-      pushLog("Requesting bypass token…");
-      const res = await app.run({
-        apikey: apiKey,
-        prompt,
-        imgUrls: tab === "image" ? imgUrls : [],
-        quality,
-        duration: Number(duration) || 8,
-        autoSoundFlag: autoSound,
-        soundPrompt,
-        autoSpeechFlag: autoSpeech,
-        speechPrompt,
-        speakerId,
-        aspectRatio: aspect,
-        watermarkFlag: watermark,
-        privateFlag: isPrivate,
-        vipFlag,
-        model,
-        onPoll: (data) => {
-          if (!data) return;
-          const pct = data?.percent || data?.progress;
-          const st = data?.state || data?.status;
-          pushLog(`Status: ${st ?? "…"}${pct ? ` (${pct}%)` : ""}`);
-        },
-      });
-
-      setResult(res);
-      const url = guessVideoUrl(res);
-      if (url) {
-        setVideoUrl(url);
-        pushLog("✅ Success — video URL found.");
-      } else {
-        pushLog("⚠️ Success — video URL not auto-detected. Check raw JSON.");
-      }
-    } catch (e) {
-      console.error(e);
-      let errorMessage = e?.message || String(e);
-      if (e.isAxiosError) {
-          errorMessage = `Network request failed: ${e.message}.`;
-          if (e.response) {
-              errorMessage += ` (Status: ${e.response.status} ${e.response.statusText})`;
-          }
-      }
-      const fullError = `${errorMessage} This can be caused by two main issues: 1) The CORS proxy needs activation. Please visit cors-anywhere.herokuapp.com, request access, and try again. 2) Your API Key may be invalid or expired.`;
-      setError(fullError);
-      pushLog(`❌ Error: ${errorMessage}`);
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  function handleCancel() {
-    clientRef.current?.cancel();
-    setBusy(false);
-    pushLog("⏹️ Cancelled by user.");
-  }
-
-  return (
-    <div className="bg-gray-50 dark:bg-black text-gray-900 dark:text-gray-100 min-h-screen font-sans">
-      <div className="mx-auto max-w-6xl p-4 sm:p-6 space-y-6">
-        <motion.header initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">VEO 3 Studio</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Text-to-Video & Image-to-Video (LunaAI, VEO-3)</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <a href="https://fgsi.koyeb.app" target="_blank" rel="noreferrer" className="text-xs underline">fgsi.koyeb.app</a>
-            <Separator orientation="vertical" className="h-6" />
-            <a href="https://lunaai.video" target="_blank" rel="noreferrer" className="text-xs underline">lunaai.video</a>
-          </div>
-        </motion.header>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Configuration</CardTitle>
-            <CardDescription>Enter your API Key & video parameters</CardDescription>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <Field label="API Key" htmlFor="api-key" hint="A valid API key is required. The default key may not work. Get one from fgsi.koyeb.app">
-                <div className="flex items-center gap-2">
-                  <Input id="api-key" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="fgsiapi-xxxxxxxx" className="font-mono" />
-                  <LinkIcon className="h-4 w-4 text-gray-400" />
-                </div>
-              </Field>
-
-              <Tabs>
-                <TabsList className="grid grid-cols-2 w-full">
-                  <TabsTrigger active={tab === 'text'} onClick={() => setTab('text')} className="gap-2"><Video className="h-4 w-4" />Text → Video</TabsTrigger>
-                  <TabsTrigger active={tab === 'image'} onClick={() => setTab('image')} className="gap-2"><ImageIcon className="h-4 w-4" />Image → Video</TabsTrigger>
-                </TabsList>
-                {tab === 'text' && (
-                  <TabsContent className="pt-4">
-                    <Field label="Prompt" htmlFor="prompt-text" hint="Describe the scene for the video">
-                      <Textarea id="prompt-text" value={prompt} onChange={(e) => setPrompt(e.target.value)} rows={5} placeholder="Cyberpunk city at night with neon rain…" />
-                    </Field>
-                  </TabsContent>
-                )}
-                {tab === 'image' && (
-                  <TabsContent className="pt-4">
-                    <div className="space-y-4">
-                      <Field label="Prompt (optional)" htmlFor="prompt-img" hint="Additional guidance for the scene">
-                        <Textarea id="prompt-img" value={prompt} onChange={(e) => setPrompt(e.target.value)} rows={3} placeholder="Pan from left to right across the skyline…" />
-                      </Field>
-                      <Field label="Image URLs" htmlFor="img-urls" hint="One URL per line. Order matters.">
-                        <Textarea id="img-urls" value={imgUrlsRaw} onChange={(e) => setImgUrlsRaw(e.target.value)} rows={5} placeholder={`https://placehold.co/600x400/000000/FFFFFF?text=Image+1\nhttps://placehold.co/600x400/FFFFFF/000000?text=Image+2`} />
-                      </Field>
-                      {!!imgUrls.length && (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                          {imgUrls.map((u, i) => (
-                            <div key={i} className="rounded-xl overflow-hidden border bg-muted/30">
-                              <img src={u} alt={`img-${i}`} className="w-full h-28 object-cover" onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/150x150/EEE/333?text=Invalid'; }} />
-                            </div>
-                          ))}
+        <!-- Configuration Card -->
+        <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm">
+            <div class="p-6">
+                <h3 class="text-lg font-semibold tracking-tight">Konfigurasi</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Masukkan Kunci API & parameter video Anda</p>
+            </div>
+            <div class="p-6 pt-0 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Left Column: API, Tabs, Prompt -->
+                <div class="space-y-4">
+                    <!-- API Key -->
+                    <div class="space-y-2">
+                        <label for="api-key" class="text-sm font-medium">Kunci API</label>
+                        <div class="flex items-center gap-2">
+                            <input id="api-key" value="fgsiapi-1e3e18a6-6d" placeholder="fgsiapi-xxxxxxxx" class="font-mono flex h-10 w-full rounded-md border border-gray-200 dark:border-gray-800 bg-transparent px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 dark:focus-visible:ring-gray-300">
+                            <!-- Link Icon SVG -->
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 text-gray-400"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.72"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.72-1.72"></path></svg>
                         </div>
-                      )}
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Kunci API yang valid diperlukan. Kunci default mungkin tidak berfungsi. Dapatkan dari fgsi.koyeb.app</p>
                     </div>
-                  </TabsContent>
-                )}
-              </Tabs>
+
+                    <!-- Tabs -->
+                    <div>
+                        <div class="inline-flex h-10 items-center justify-center rounded-md bg-gray-100 dark:bg-gray-800 p-1 text-gray-500 dark:text-gray-400 grid grid-cols-2 w-full">
+                            <button id="tab-text" class="gap-2 inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium transition-all bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-50 shadow-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="m22 8-6 4 6 4V8Z"></path><path d="M14 12H2"></path></svg>
+                                Teks → Video
+                            </button>
+                            <button id="tab-image" class="gap-2 inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium transition-all">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path></svg>
+                                Gambar → Video
+                            </button>
+                        </div>
+                        <div id="content-text" class="mt-2 pt-4">
+                            <div class="space-y-2">
+                                <label for="prompt-text" class="text-sm font-medium">Prompt</label>
+                                <textarea id="prompt-text" rows="5" placeholder="Kota cyberpunk di malam hari dengan hujan neon..." class="flex min-h-[80px] w-full rounded-md border border-gray-200 dark:border-gray-800 bg-transparent px-3 py-2 text-sm placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 dark:focus-visible:ring-gray-300">Seekor singa agung mengaum di atas singkapan berbatu saat matahari terbenam</textarea>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Jelaskan adegan untuk video</p>
+                            </div>
+                        </div>
+                        <div id="content-image" class="mt-2 pt-4 hidden">
+                             <div class="space-y-4">
+                                <div class="space-y-2">
+                                    <label for="prompt-img" class="text-sm font-medium">Prompt (opsional)</label>
+                                    <textarea id="prompt-img" rows="3" placeholder="Geser dari kiri ke kanan melintasi cakrawala..." class="flex min-h-[80px] w-full rounded-md border border-gray-200 dark:border-gray-800 bg-transparent px-3 py-2 text-sm placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 dark:focus-visible:ring-gray-300"></textarea>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Panduan tambahan untuk adegan</p>
+                                </div>
+                                <div class="space-y-2">
+                                    <label for="img-urls" class="text-sm font-medium">URL Gambar</label>
+                                    <textarea id="img-urls" rows="5" placeholder="https://placehold.co/600x400/000000/FFFFFF?text=Image+1&#10;https://placehold.co/600x400/FFFFFF/000000?text=Image+2" class="flex min-h-[80px] w-full rounded-md border border-gray-200 dark:border-gray-800 bg-transparent px-3 py-2 text-sm placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 dark:focus-visible:ring-gray-300"></textarea>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Satu URL per baris. Urutan penting.</p>
+                                </div>
+                                <div id="image-preview-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Settings -->
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="quality" class="text-sm font-medium">Kualitas</label>
+                            <select id="quality" class="mt-2 flex h-10 w-full items-center justify-between rounded-md border border-gray-200 dark:border-gray-800 bg-transparent px-3 py-2 text-sm">
+                                <option value="480p">480p</option>
+                                <option value="720p" selected>720p</option>
+                                <option value="1080p">1080p</option>
+                            </select>
+                        </div>
+                         <div>
+                            <label for="duration" class="text-sm font-medium">Durasi (s)</label>
+                            <input id="duration" type="number" min="2" max="60" value="8" class="mt-2 flex h-10 w-full rounded-md border border-gray-200 dark:border-gray-800 bg-transparent px-3 py-2 text-sm">
+                        </div>
+                        <div>
+                            <label for="aspect" class="text-sm font-medium">Rasio Aspek</label>
+                            <select id="aspect" class="mt-2 flex h-10 w-full items-center justify-between rounded-md border border-gray-200 dark:border-gray-800 bg-transparent px-3 py-2 text-sm">
+                                <option value="16:9" selected>16:9</option>
+                                <option value="9:16">9:16</option>
+                                <option value="1:1">1:1</option>
+                                <option value="4:3">4:3</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="model" class="text-sm font-medium">Model</label>
+                            <select id="model" class="mt-2 flex h-10 w-full items-center justify-between rounded-md border border-gray-200 dark:border-gray-800 bg-transparent px-3 py-2 text-sm">
+                                <option value="veo-3-fast" selected>veo-3-fast</option>
+                                <option value="veo-3">veo-3</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button id="toggle-advanced" class="gap-2 text-gray-500 dark:text-gray-400 inline-flex items-center justify-center whitespace-nowrap text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800 h-9 px-3 rounded-md">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 0 2l-.15.08a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1 0-2l.15-.08a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        Opsi Lanjutan
+                    </button>
+
+                    <div id="advanced-options" class="hidden space-y-4 border-t pt-4 fade-in">
+                        <!-- Sound/Speech Toggles -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="flex items-center justify-between gap-3 p-3 rounded-xl border border-gray-200 dark:border-gray-800">
+                                <div>
+                                    <label class="text-sm">Auto Sound FX</label>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Tambah efek suara otomatis</p>
+                                </div>
+                                <button type="button" role="switch" id="auto-sound" class="bg-gray-200 dark:bg-gray-800 relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out">
+                                    <span class="translate-x-0 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+                                </button>
+                            </div>
+                            <div class="flex items-center justify-between gap-3 p-3 rounded-xl border border-gray-200 dark:border-gray-800">
+                                <div>
+                                    <label class="text-sm">Auto Speech</label>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Hasilkan narasi otomatis</p>
+                                </div>
+                                <button type="button" role="switch" id="auto-speech" class="bg-gray-200 dark:bg-gray-800 relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out">
+                                    <span class="translate-x-0 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Sound/Speech Prompts -->
+                        <div>
+                            <label for="sound-prompt" class="text-sm font-medium">Prompt Suara</label>
+                            <input id="sound-prompt" placeholder="misalnya, hujan lembut dan lalu lintas jauh" class="mt-2 flex h-10 w-full rounded-md border border-gray-200 dark:border-gray-800 bg-transparent px-3 py-2 text-sm">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="speech-prompt" class="text-sm font-medium">Prompt Pidato</label>
+                                <input id="speech-prompt" placeholder="Teks narasi..." class="mt-2 flex h-10 w-full rounded-md border border-gray-200 dark:border-gray-800 bg-transparent px-3 py-2 text-sm">
+                            </div>
+                            <div>
+                                <label for="speaker-id" class="text-sm font-medium">ID Pembicara</label>
+                                <input id="speaker-id" placeholder="Otomatis" value="Auto" class="mt-2 flex h-10 w-full rounded-md border border-gray-200 dark:border-gray-800 bg-transparent px-3 py-2 text-sm">
+                            </div>
+                        </div>
+                        <!-- Other Flags -->
+                        <div class="grid grid-cols-3 gap-4">
+                            <div class="flex flex-col items-start justify-center gap-2 p-3 rounded-xl border border-gray-200 dark:border-gray-800">
+                                <label class="text-sm font-medium">Tambah Watermark</label>
+                                <button type="button" role="switch" id="watermark" class="bg-gray-200 dark:bg-gray-800 relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out">
+                                    <span class="translate-x-0 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+                                </button>
+                            </div>
+                            <div class="flex flex-col items-start justify-center gap-2 p-3 rounded-xl border border-gray-200 dark:border-gray-800">
+                                <label class="text-sm font-medium">Video Pribadi</label>
+                                <button type="button" role="switch" id="private" class="bg-gray-200 dark:bg-gray-800 relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out">
+                                    <span class="translate-x-0 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+                                </button>
+                            </div>
+                            <div class="flex flex-col items-start justify-center gap-2 p-3 rounded-xl border border-gray-200 dark:border-gray-800">
+                                <label class="text-sm font-medium">Antrean VIP</label>
+                                <button type="button" role="switch" id="vip" aria-checked="true" class="bg-gray-900 dark:bg-gray-50 relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out">
+                                    <span class="translate-x-5 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex items-center gap-3 pt-2">
+                        <button id="btn-generate" class="gap-2 px-5 inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-50 bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200 h-10 rounded-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="m22 8-6 4 6 4V8Z"></path><path d="M14 12H2"></path></svg>
+                            Hasilkan
+                        </button>
+                        <button id="btn-cancel" disabled class="gap-2 inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-50 bg-gray-100 text-gray-900 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-50 dark:hover:bg-gray-700 h-10 px-4 py-2 rounded-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><circle cx="12" cy="12" r="10"></circle><path d="m15 9-6 6"></path><path d="m9 9 6 6"></path></svg>
+                            Batal
+                        </button>
+                    </div>
+
+                    <!-- Proxy Notice -->
+                    <div class="rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-3 text-xs text-yellow-700 dark:text-yellow-300">
+                        <p class="font-medium mb-1">Tindakan Diperlukan: Proksi Jaringan</p>
+                        <p>Aplikasi ini menggunakan proksi publik. Jika Anda melihat kesalahan jaringan, silakan <a href="https://cors-anywhere.herokuapp.com/" target="_blank" rel="noopener noreferrer" class="underline font-semibold">kunjungi halaman aktivasi proksi</a>, klik tombol untuk meminta akses, lalu coba hasilkan lagi.</p>
+                    </div>
+                </div>
             </div>
-
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <Field label="Quality" htmlFor="quality">
-                  <select id="quality" value={quality} onChange={e => setQuality(e.target.value)} className="flex h-10 w-full items-center justify-between rounded-md border border-gray-200 dark:border-gray-800 bg-transparent px-3 py-2 text-sm">
-                    <option value="480p">480p</option>
-                    <option value="720p">720p</option>
-                    <option value="1080p">1080p</option>
-                  </select>
-                </Field>
-                <Field label="Duration (s)" htmlFor="duration">
-                  <Input id="duration" type="number" min={2} max={60} value={duration} onChange={(e) => setDuration(e.target.value)} />
-                </Field>
-                <Field label="Aspect Ratio" htmlFor="aspect">
-                   <select id="aspect" value={aspect} onChange={e => setAspect(e.target.value)} className="flex h-10 w-full items-center justify-between rounded-md border border-gray-200 dark:border-gray-800 bg-transparent px-3 py-2 text-sm">
-                    <option value="16:9">16:9</option>
-                    <option value="9:16">9:16</option>
-                    <option value="1:1">1:1</option>
-                    <option value="4:3">4:3</option>
-                  </select>
-                </Field>
-                <Field label="Model" htmlFor="model">
-                   <select id="model" value={model} onChange={e => setModel(e.target.value)} className="flex h-10 w-full items-center justify-between rounded-md border border-gray-200 dark:border-gray-800 bg-transparent px-3 py-2 text-sm">
-                    <option value="veo-3-fast">veo-3-fast</option>
-                    <option value="veo-3">veo-3</option>
-                  </select>
-                </Field>
-              </div>
-
-              <Button variant="ghost" size="sm" onClick={() => setShowAdvanced((s) => !s)} className="gap-2 text-gray-500 dark:text-gray-400">
-                <Settings2 className="h-4 w-4" /> Advanced options
-              </Button>
-
-              {showAdvanced && (
-                <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} className="space-y-4 border-t pt-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="flex items-center justify-between gap-3 p-3 rounded-xl border border-gray-200 dark:border-gray-800">
-                      <div>
-                        <Label className="text-sm">Auto Sound FX</Label>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Add auto sound effects</p>
-                      </div>
-                      <Switch checked={autoSound} onCheckedChange={setAutoSound} />
-                    </div>
-                    <div className="flex items-center justify-between gap-3 p-3 rounded-xl border border-gray-200 dark:border-gray-800">
-                      <div>
-                        <Label className="text-sm">Auto Speech</Label>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Generate auto narration</p>
-                      </div>
-                      <Switch checked={autoSpeech} onCheckedChange={setAutoSpeech} />
-                    </div>
-                  </div>
-                  <Field label="Sound Prompt" htmlFor="sound-prompt">
-                    <Input id="sound-prompt" placeholder="e.g., gentle rain and distant traffic" value={soundPrompt} onChange={(e) => setSoundPrompt(e.target.value)} />
-                  </Field>
-                  <div className="grid grid-cols-2 gap-4">
-                    <Field label="Speech Prompt" htmlFor="speech-prompt">
-                      <Input id="speech-prompt" placeholder="Narration text…" value={speechPrompt} onChange={(e) => setSpeechPrompt(e.target.value)} />
-                    </Field>
-                    <Field label="Speaker ID" htmlFor="speaker-id">
-                      <Input id="speaker-id" placeholder="Auto" value={speakerId} onChange={(e) => setSpeakerId(e.target.value)} />
-                    </Field>
-                  </div>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="flex flex-col items-start justify-center gap-2 p-3 rounded-xl border border-gray-200 dark:border-gray-800">
-                        <Label htmlFor="watermark-switch" className="text-sm font-medium">Tambahkan Watermark</Label>
-                        <Switch id="watermark-switch" checked={watermark} onCheckedChange={setWatermark} />
-                    </div>
-                    <div className="flex flex-col items-start justify-center gap-2 p-3 rounded-xl border border-gray-200 dark:border-gray-800">
-                        <Label htmlFor="private-switch" className="text-sm font-medium">Video Pribadi</Label>
-                        <Switch id="private-switch" checked={isPrivate} onCheckedChange={setIsPrivate} />
-                    </div>
-                    <div className="flex flex-col items-start justify-center gap-2 p-3 rounded-xl border border-gray-200 dark:border-gray-800">
-                        <Label htmlFor="vip-switch" className="text-sm font-medium">Antrean VIP</Label>
-                        <Switch id="vip-switch" checked={vipFlag} onCheckedChange={setVipFlag} />
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-
-              <div className="flex items-center gap-3 pt-2">
-                <Button onClick={handleRun} disabled={busy} className="gap-2 px-5">
-                  {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Video className="h-4 w-4" />} Generate
-                </Button>
-                <Button onClick={handleCancel} disabled={!busy} variant="secondary" className="gap-2">
-                  <CircleStop className="h-4 w-4" /> Cancel
-                </Button>
-              </div>
-              
-              <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-3 text-xs text-yellow-700 dark:text-yellow-300">
-                <p className="font-medium mb-1">Action Required: Network Proxy</p>
-                <p>
-                    This app uses a public proxy. If you see network errors, please{' '}
-                    <a href="https://cors-anywhere.herokuapp.com/" target="_blank" rel="noopener noreferrer" className="underline font-semibold">
-                        visit the proxy activation page
-                    </a>, click the button to request access, and then try generating again.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle>Result</CardTitle>
-              <CardDescription>Video preview & metadata</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {videoUrl ? (
-                <div className="space-y-3">
-                  <video src={videoUrl} controls className="w-full rounded-2xl shadow-lg bg-black" />
-                  <div className="flex items-center gap-2">
-                    <a href={videoUrl} download target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-sm underline">
-                      <Download className="h-4 w-4" /> Download video
-                    </a>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-sm text-gray-500 dark:text-gray-400 h-60 flex items-center justify-center bg-gray-100 dark:bg-gray-800/50 rounded-2xl">
-                    {busy ? 'Generating video...' : 'Your video will appear here.'}
-                </div>
-              )}
-              {result && (
-                <div className="rounded-xl border border-gray-200 dark:border-gray-800 p-3">
-                  <div className="text-sm font-medium mb-2">Raw JSON Response</div>
-                  <pre className="text-xs whitespace-pre-wrap break-words max-h-80 overflow-auto bg-gray-100 dark:bg-gray-800/50 p-3 rounded-lg font-mono">{JSON.stringify(result, null, 2)}</pre>
-                </div>
-              )}
-              {error && (
-                <div className="rounded-xl border border-red-500/30 p-3 text-sm text-red-600 dark:text-red-400 bg-red-500/10">{error}</div>
-              )}
-            </CardContent>
-          </Card>
-
-          <StatusDisplay logs={logs} busy={busy} error={error} videoUrl={videoUrl} />
-          
         </div>
 
-        <footer className="text-xs text-gray-500 dark:text-gray-400 text-center py-4">
-          © {new Date().getFullYear()} — VEO 3 Studio • Built with React & Tailwind. Powered by LunaAI.
+        <!-- Results Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Video Preview -->
+            <div class="lg:col-span-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm">
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold tracking-tight">Hasil</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Pratinjau video & metadata</p>
+                </div>
+                <div class="p-6 pt-0 space-y-4">
+                    <div id="video-container" class="text-sm text-gray-500 dark:text-gray-400 h-60 flex items-center justify-center bg-gray-100 dark:bg-gray-800/50 rounded-2xl">
+                        Video Anda akan muncul di sini.
+                    </div>
+                    <div id="result-container" class="hidden">
+                        <div class="rounded-xl border border-gray-200 dark:border-gray-800 p-3">
+                            <div class="text-sm font-medium mb-2">Respons JSON Mentah</div>
+                            <pre id="result-json" class="text-xs whitespace-pre-wrap break-words max-h-80 overflow-auto bg-gray-100 dark:bg-gray-800/50 p-3 rounded-lg font-mono"></pre>
+                        </div>
+                    </div>
+                    <div id="error-container" class="hidden rounded-xl border border-red-500/30 p-3 text-sm text-red-600 dark:text-red-400 bg-red-500/10"></div>
+                </div>
+            </div>
+
+            <!-- Status Display -->
+            <div id="status-display" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm">
+                <!-- Content will be injected by JS -->
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-xs text-gray-500 dark:text-gray-400 text-center py-4">
+            © ${new Date().getFullYear()} — VEO 3 Studio • Dibuat dengan React & Tailwind. Didukung oleh LunaAI.
         </footer>
-      </div>
     </div>
-  );
-}
+
+    <script type="module">
+        // --- DOM Elements ---
+        const $ = (selector) => document.querySelector(selector);
+        const elements = {
+            apiKey: $('#api-key'),
+            tabText: $('#tab-text'),
+            tabImage: $('#tab-image'),
+            contentText: $('#content-text'),
+            contentImage: $('#content-image'),
+            promptText: $('#prompt-text'),
+            promptImg: $('#prompt-img'),
+            imgUrls: $('#img-urls'),
+            imagePreviewGrid: $('#image-preview-grid'),
+            quality: $('#quality'),
+            duration: $('#duration'),
+            aspect: $('#aspect'),
+            model: $('#model'),
+            toggleAdvanced: $('#toggle-advanced'),
+            advancedOptions: $('#advanced-options'),
+            autoSound: $('#auto-sound'),
+            autoSpeech: $('#auto-speech'),
+            soundPrompt: $('#sound-prompt'),
+            speechPrompt: $('#speech-prompt'),
+            speakerId: $('#speaker-id'),
+            watermark: $('#watermark'),
+            private: $('#private'),
+            vip: $('#vip'),
+            btnGenerate: $('#btn-generate'),
+            btnCancel: $('#btn-cancel'),
+            videoContainer: $('#video-container'),
+            resultContainer: $('#result-container'),
+            resultJson: $('#result-json'),
+            errorContainer: $('#error-container'),
+            statusDisplay: $('#status-display'),
+        };
+
+        // --- State ---
+        let state = {
+            currentTab: 'text',
+            busy: false,
+            logs: [],
+            error: '',
+            videoUrl: '',
+            result: null,
+        };
+        let clientInstance = null;
+        
+        // --- API Client ---
+        class LunaAI {
+          constructor(debug = false) {
+            this.debug = debug;
+            this.proxy = "https://cors-anywhere.herokuapp.com/";
+            this.bypassUrl = "https://fgsi.koyeb.app/api/tools/bypasscf/v5";
+            this.createUrl = "https://aiarticle.erweima.ai/api/v1/secondary-page/api/create";
+            this.statusUrl = "https://aiarticle.erweima.ai/api/v1/secondary-page/api/";
+            this.sitekey = "0x4AAAAAAAdJZmNxW54o-Gvd"; 
+            this._interval = null;
+          }
+
+          cancel() {
+            if (this._interval) {
+              clearInterval(this._interval);
+              this._interval = null;
+            }
+          }
+
+          async bypassCF(url, apikey) {
+            const proxyUrl = `${this.proxy}${this.bypassUrl}`;
+            const res = await axios.get(proxyUrl, {
+              params: { apikey, url, sitekey: this.sitekey, mode: "turnstile-min" },
+              headers: { 'x-requested-with': 'XMLHttpRequest' }
+            });
+            return res?.data?.data?.token;
+          }
+
+          async createVideo(token, payload) {
+            const proxyUrl = `${this.proxy}${this.createUrl}`;
+            const headers = {
+              'verify': token,
+              'uniqueid': window.btoa(String(Date.now())),
+              'x-requested-with': 'XMLHttpRequest'
+            };
+            const res = await axios.post(proxyUrl, payload, { headers });
+            return res?.data?.data?.recordId;
+          }
+
+          async checkStatus(recordId) {
+            const proxyUrl = `${this.proxy}${this.statusUrl}${recordId}`;
+            const res = await axios.get(proxyUrl, {
+                headers: { 'x-requested-with': 'XMLHttpRequest' }
+            });
+            return res?.data?.data;
+          }
+
+          run({ onPoll, ...params }) {
+            return new Promise(async (resolve, reject) => {
+              try {
+                const token = await this.bypassCF("https://lunaai.video/features/v3-fast", params.apikey);
+                if (!token) return reject(new Error("Bypass token failed. Please ensure the CORS proxy is active."));
+                this.debug && console.log("[🛡️ Bypass Success] Token:", token);
+
+                const recordId = await this.createVideo(token, params);
+                if (!recordId) return reject(new Error("Failed to get a Record ID. The API may be down or the request was blocked."));
+                this.debug && console.log("[🎬 Video Requested] Record ID:", recordId);
+
+                this._interval = setInterval(async () => {
+                  try {
+                    const data = await this.checkStatus(recordId);
+                    onPoll?.(data);
+                    if (data?.state === "success" && data?.completeData) {
+                      clearInterval(this._interval);
+                      this._interval = null;
+                      const result = JSON.parse(data.completeData);
+                      this.debug && console.log("[✅ Success]");
+                      resolve(result);
+                    } else if (data?.failCode || data?.failMsg) {
+                      clearInterval(this._interval);
+                      this._interval = null;
+                      reject(new Error(`[❌ Failed] ${data.failCode || ""} ${data.failMsg || ""}`));
+                    }
+                  } catch (err) {
+                    clearInterval(this._interval);
+                    this._interval = null;
+                    reject(err);
+                  }
+                }, 5000);
+              } catch (err) {
+                reject(err);
+              }
+            });
+          }
+        }
+
+        function guessVideoUrl(obj) {
+          if (!obj) return undefined;
+          let finalUrl = undefined;
+          const candidates = [
+            obj.video_url, obj.videoUrl, obj.image_url, obj.imageUrl, 
+            obj.url, obj.downloadUrl, obj?.video?.url, obj?.data?.videoUrl, obj?.data?.url,
+          ];
+          for (const c of candidates) {
+            if (typeof c === "string" && c.startsWith("http")) {
+              finalUrl = c;
+              break;
+            }
+          }
+          if (!finalUrl) {
+              try {
+                const queue = [obj];
+                while (queue.length > 0 && !finalUrl) {
+                  const cur = queue.shift();
+                  if (typeof cur === 'string' && cur.startsWith('http') && (cur.includes('.mp4') || cur.includes('.jpg') || cur.includes('.png'))) {
+                      finalUrl = cur;
+                      break;
+                  }
+                  if (cur && typeof cur === 'object') {
+                    for (const v of Object.values(cur)) queue.push(v);
+                  }
+                }
+              } catch (e) { console.error("Deep URL search failed:", e); }
+          }
+          if (finalUrl) {
+              let modifiedUrl = finalUrl.replace(/_watermarked/g, '');
+              modifiedUrl = modifiedUrl.replace(/\.(jpg|jpeg|png|webp)(\?.*)?$/i, ".mp4");
+              return modifiedUrl;
+          }
+          return undefined;
+        }
+
+        // --- UI Update Functions ---
+        function updateUI() {
+            // Button states
+            elements.btnGenerate.disabled = state.busy;
+            elements.btnCancel.disabled = !state.busy;
+            if (state.busy) {
+                elements.btnGenerate.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 animate-spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg> Menghasilkan...`;
+            } else {
+                elements.btnGenerate.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="m22 8-6 4 6 4V8Z"></path><path d="M14 12H2"></path></svg> Hasilkan`;
+            }
+
+            // Tabs
+            if (state.currentTab === 'text') {
+                elements.tabText.classList.add('bg-white', 'dark:bg-gray-900', 'text-gray-900', 'dark:text-gray-50', 'shadow-sm');
+                elements.tabImage.classList.remove('bg-white', 'dark:bg-gray-900', 'text-gray-900', 'dark:text-gray-50', 'shadow-sm');
+                elements.contentText.classList.remove('hidden');
+                elements.contentImage.classList.add('hidden');
+            } else {
+                elements.tabImage.classList.add('bg-white', 'dark:bg-gray-900', 'text-gray-900', 'dark:text-gray-50', 'shadow-sm');
+                elements.tabText.classList.remove('bg-white', 'dark:bg-gray-900', 'text-gray-900', 'dark:text-gray-50', 'shadow-sm');
+                elements.contentImage.classList.remove('hidden');
+                elements.contentText.classList.add('hidden');
+            }
+
+            // Video/Result Display
+            if (state.videoUrl) {
+                elements.videoContainer.innerHTML = `
+                    <div class="space-y-3 w-full">
+                        <video src="${state.videoUrl}" controls class="w-full rounded-2xl shadow-lg bg-black"></video>
+                        <div class="flex items-center gap-2">
+                            <a href="${state.videoUrl}" download target="_blank" rel="noreferrer" class="inline-flex items-center gap-2 text-sm underline">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" x2="12" y1="15" y2="3"></line></svg>
+                                Unduh video
+                            </a>
+                        </div>
+                    </div>`;
+            } else {
+                elements.videoContainer.innerHTML = `<div class="text-sm text-gray-500 dark:text-gray-400">${state.busy ? 'Menghasilkan video...' : 'Video Anda akan muncul di sini.'}</div>`;
+            }
+            
+            if (state.result) {
+                elements.resultContainer.classList.remove('hidden');
+                elements.resultJson.textContent = JSON.stringify(state.result, null, 2);
+            } else {
+                elements.resultContainer.classList.add('hidden');
+            }
+
+            if (state.error) {
+                elements.errorContainer.classList.remove('hidden');
+                elements.errorContainer.textContent = state.error;
+            } else {
+                elements.errorContainer.classList.add('hidden');
+            }
+            
+            updateStatusDisplay();
+        }
+        
+        function updateStatusDisplay() {
+            const latestLog = state.logs.length > 0 ? state.logs[state.logs.length - 1] : "";
+            const statusText = latestLog.split('—')[1]?.trim() || "Menunggu untuk memulai...";
+            const progressMatch = latestLog.match(/\((\d+)%\)/);
+            const progress = progressMatch ? parseInt(progressMatch[1], 10) : 0;
+
+            let icon, colorClass, displayStatusText;
+
+            if (state.error) {
+                icon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-12 w-12 text-red-500"><circle cx="12" cy="12" r="10"></circle><path d="m15 9-6 6"></path><path d="m9 9 6 6"></path></svg>`;
+                colorClass = "bg-red-500";
+                displayStatusText = "Terjadi Kesalahan";
+            } else if (state.videoUrl) {
+                icon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-12 w-12 text-green-500"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`;
+                colorClass = "bg-green-500";
+                displayStatusText = "Video Berhasil Dibuat!";
+            } else if (state.busy) {
+                icon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-12 w-12 text-blue-500 animate-spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg>`;
+                colorClass = "bg-blue-500";
+                displayStatusText = statusText;
+            } else {
+                icon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-12 w-12 text-gray-500"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>`;
+                colorClass = "bg-gray-500";
+                displayStatusText = state.logs.length > 0 ? "Dibatalkan" : "Siap untuk memulai";
+            }
+            
+            const logsHtml = state.logs.length > 0
+                ? state.logs.slice(-5).map(l => `<div class="whitespace-pre-wrap break-all">${l}</div>`).join('')
+                : `<div class="text-gray-500 dark:text-gray-400">Log akan tampil di sini…</div>`;
+
+            elements.statusDisplay.innerHTML = `
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold tracking-tight">Status Proses</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Perkembangan pembuatan video secara real-time</p>
+                </div>
+                <div class="p-6 pt-0">
+                    <div class="flex flex-col items-center text-center space-y-4 pt-4">
+                        <div class="fade-in">${icon}</div>
+                        <p class="font-medium text-lg h-6">${displayStatusText}</p>
+                        <div class="w-full bg-gray-200 rounded-full h-3 dark:bg-gray-700 overflow-hidden">
+                            <div class="h-3 rounded-full ${colorClass} transition-all duration-500" style="width: ${state.videoUrl ? 100 : progress}%"></div>
+                        </div>
+                        <div class="text-xs font-mono space-y-1 w-full text-left bg-gray-100 dark:bg-gray-800/50 p-3 rounded-lg h-28 overflow-auto custom-scrollbar">
+                            ${logsHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function pushLog(line) {
+            state.logs = [...state.logs, `${new Date().toLocaleTimeString()} — ${line}`].slice(-200);
+            updateUI();
+        }
+
+        // --- Event Handlers ---
+        async function handleRun() {
+            state.busy = true;
+            state.error = '';
+            state.result = null;
+            state.videoUrl = '';
+            state.logs = [];
+            updateUI();
+
+            clientInstance = new LunaAI(true);
+
+            try {
+                pushLog("Meminta token bypass…");
+                const imgUrls = elements.imgUrls.value.split(/\n|,/).map(s => s.trim()).filter(Boolean);
+                
+                const res = await clientInstance.run({
+                    apikey: elements.apiKey.value,
+                    prompt: state.currentTab === 'text' ? elements.promptText.value : elements.promptImg.value,
+                    imgUrls: state.currentTab === 'image' ? imgUrls : [],
+                    quality: elements.quality.value,
+                    duration: Number(elements.duration.value) || 8,
+                    autoSoundFlag: elements.autoSound.getAttribute('aria-checked') === 'true',
+                    soundPrompt: elements.soundPrompt.value,
+                    autoSpeechFlag: elements.autoSpeech.getAttribute('aria-checked') === 'true',
+                    speechPrompt: elements.speechPrompt.value,
+                    speakerId: elements.speakerId.value,
+                    aspectRatio: elements.aspect.value,
+                    watermarkFlag: elements.watermark.getAttribute('aria-checked') === 'true',
+                    privateFlag: elements.private.getAttribute('aria-checked') === 'true',
+                    vipFlag: elements.vip.getAttribute('aria-checked') === 'true',
+                    model: elements.model.value,
+                    onPoll: (data) => {
+                        if (!data) return;
+                        const pct = data?.percent || data?.progress;
+                        const st = data?.state || data?.status;
+                        pushLog(`Status: ${st ?? "…"}${pct ? ` (${pct}%)` : ""}`);
+                    },
+                });
+
+                state.result = res;
+                const url = guessVideoUrl(res);
+                if (url) {
+                    state.videoUrl = url;
+                    pushLog("✅ Berhasil — URL video ditemukan.");
+                } else {
+                    pushLog("⚠️ Berhasil — URL video tidak terdeteksi secara otomatis. Periksa JSON mentah.");
+                }
+            } catch (e) {
+                console.error(e);
+                let errorMessage = e?.message || String(e);
+                if (e.isAxiosError) {
+                    errorMessage = `Permintaan jaringan gagal: ${e.message}.`;
+                    if (e.response) {
+                        errorMessage += ` (Status: ${e.response.status} ${e.response.statusText})`;
+                    }
+                }
+                const fullError = `${errorMessage} Ini bisa disebabkan oleh dua masalah utama: 1) Proksi CORS memerlukan aktivasi. Silakan kunjungi cors-anywhere.herokuapp.com, minta akses, dan coba lagi. 2) Kunci API Anda mungkin tidak valid atau kedaluwarsa.`;
+                state.error = fullError;
+                pushLog(`❌ Kesalahan: ${errorMessage}`);
+            } finally {
+                state.busy = false;
+                updateUI();
+            }
+        }
+
+        function handleCancel() {
+            clientInstance?.cancel();
+            state.busy = false;
+            pushLog("⏹️ Dibatalkan oleh pengguna.");
+            updateUI();
+        }
+
+        function setupEventListeners() {
+            elements.tabText.addEventListener('click', () => {
+                state.currentTab = 'text';
+                updateUI();
+            });
+            elements.tabImage.addEventListener('click', () => {
+                state.currentTab = 'image';
+                updateUI();
+            });
+            elements.toggleAdvanced.addEventListener('click', () => {
+                elements.advancedOptions.classList.toggle('hidden');
+            });
+            
+            // Handle all switches
+            document.querySelectorAll('button[role="switch"]').forEach(sw => {
+                sw.addEventListener('click', () => {
+                    const isChecked = sw.getAttribute('aria-checked') === 'true';
+                    sw.setAttribute('aria-checked', !isChecked);
+                    sw.classList.toggle('bg-gray-900');
+                    sw.classList.toggle('dark:bg-gray-50');
+                    sw.classList.toggle('bg-gray-200');
+                    sw.classList.toggle('dark:bg-gray-800');
+                    sw.querySelector('span').classList.toggle('translate-x-5');
+                    sw.querySelector('span').classList.toggle('translate-x-0');
+                });
+            });
+
+            elements.imgUrls.addEventListener('input', (e) => {
+                const urls = e.target.value.split(/\n|,/).map(s => s.trim()).filter(Boolean);
+                elements.imagePreviewGrid.innerHTML = urls.map(u => `
+                    <div class="rounded-xl overflow-hidden border bg-muted/30">
+                        <img src="${u}" alt="image preview" class="w-full h-28 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/150x150/EEE/333?text=Invalid';">
+                    </div>
+                `).join('');
+            });
+
+            elements.btnGenerate.addEventListener('click', handleRun);
+            elements.btnCancel.addEventListener('click', handleCancel);
+        }
+
+        // --- Initialisation ---
+        document.addEventListener('DOMContentLoaded', () => {
+            setupEventListeners();
+            updateUI(); // Initial render
+        });
+    </script>
+</body>
+</html>
