@@ -129,14 +129,33 @@
     <!-- The root element where the React app will be mounted -->
     <div id="root"></div>
 
+    <!-- CORS Anywhere script to handle API requests -->
+    <script>
+        (function() {
+            var cors_api_host = 'cors-anywhere.herokuapp.com';
+            var cors_api_url = 'https://' + cors_api_host + '/';
+            var slice = [].slice;
+            var origin = window.location.protocol + '//' + window.location.host;
+            var open = XMLHttpRequest.prototype.open;
+            XMLHttpRequest.prototype.open = function() {
+                var args = slice.call(arguments);
+                var targetOrigin = /^https?:\/\/([^\/]+)/i.exec(args[1]);
+                if (targetOrigin && targetOrigin[0].toLowerCase() !== origin &&
+                    targetOrigin[1] !== cors_api_host) {
+                    args[1] = cors_api_url + args[1];
+                }
+                return open.apply(this, args);
+            };
+        })();
+    </script>
+
     <!-- The React application code, transpiled by Babel -->
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo } = React;
 
         // Main API client class
         class LunaAI {
-          constructor(proxyUrl = '', debug = false) {
-            this.proxyUrl = proxyUrl.endsWith('/') ? proxyUrl : `${proxyUrl}/`;
+          constructor(debug = false) {
             this.debug = debug;
             const p = ["aHR0cHM6Ly9m", "Z3NpLmtveWVi", "LmFwcC9hcGkv", "dG9vbHMvYnlw", "YXNzY2YvdjU="];
             const p_ = ["aHR0cHM6Ly9h", "aWFydGljbGUu", "ZXJ3ZWltYS5h", "aS9hcGkvdjEv", "c2Vjb25kYXJ5", "LXBhZ2UvYXBp", "L2NyZWF0ZQ=="];
@@ -157,20 +176,20 @@
           }
 
           async bypassCF(url, apikey) {
-            const res = await axios.get(`${this.proxyUrl}${this.bypassUrl}`, { params: { apikey, url, sitekey: this.sitekey, mode: "turnstile-min" } });
+            const res = await axios.get(this.bypassUrl, { params: { apikey, url, sitekey: this.sitekey, mode: "turnstile-min" }, headers: { 'x-requested-with': 'XMLHttpRequest' } });
             return res?.data?.data?.token;
           }
 
           async createVideo(token, payload) {
-            const headers = { 'Content-Type': 'application/json', 'verify': token, 'uniqueid': window.btoa(String(Date.now())) || "" };
-            const res = await axios.post(`${this.proxyUrl}${this.createUrl}`, payload, { headers });
+            const headers = { 'Content-Type': 'application/json', 'verify': token, 'uniqueid': window.btoa(String(Date.now())) || "", 'x-requested-with': 'XMLHttpRequest' };
+            const res = await axios.post(this.createUrl, payload, { headers });
             const recordId = res?.data?.data?.recordId;
             if (recordId) return recordId;
             throw new Error(`API returned an error: ${res?.data?.msg || res?.data?.message || JSON.stringify(res.data)}`);
           }
 
           async checkStatus(recordId) {
-            const res = await axios.get(`${this.proxyUrl}${this.statusUrl}${recordId}`);
+            const res = await axios.get(`${this.statusUrl}${recordId}`, { headers: { 'x-requested-with': 'XMLHttpRequest' } });
             return res?.data?.data;
           }
 
@@ -179,7 +198,7 @@
               try {
                 if (!apikey) return reject(new Error("API Key is missing."));
                 const token = await this.bypassCF("https://lunaai.video/features/v3-fast", apikey);
-                if (!token) return reject(new Error("Bypass token failed. Please ensure the CORS proxy is active and valid."));
+                if (!token) return reject(new Error("Bypass token failed. Please ensure the CORS proxy is active."));
                 this.debug && console.log("[🛡️ Bypass Success] Token:", token);
                 const payload = { prompt, imgUrls, quality, duration, autoSoundFlag: false, soundPrompt: "", autoSpeechFlag: false, speechPrompt: "", speakerId: "Auto", aspectRatio, secondaryPageId, channel, source, type, watermarkFlag, privateFlag, isTemp, vipFlag, model };
                 const recordId = await this.createVideo(token, payload);
@@ -283,7 +302,6 @@
           const [downloading, setDownloading] = useState(-1);
           const [apiKey, setApiKey] = useState("");
           const [isApiLoading, setIsApiLoading] = useState(true);
-          const [corsProxy, setCorsProxy] = useState("https://cors-anywhere.herokuapp.com/");
           const clientRef = useRef(null);
           
           function pushLog(line) { setLogs((prev) => [...prev, `${new Date().toLocaleTimeString()} — ${line}`].slice(-200)); }
@@ -296,7 +314,7 @@
                 const apiUrl = atob(b64);
                 pushLog('Fetching API key...');
                 try {
-                    const response = await fetch(`${corsProxy}${apiUrl}`);
+                    const response = await fetch(apiUrl);
                     if (!response.ok) throw new Error(`Network response was not ok, status: ${response.status}`);
                     const scriptContent = await response.text();
                     const match = scriptContent.match(/(fgsiapi-[a-f0-9-]+)/);
@@ -304,14 +322,14 @@
                     else { throw new Error("Could not find a valid API key in the fetched script."); }
                 } catch (error) {
                     console.error("Failed to fetch API key:", error);
-                    const errorMessage = `Failed to load API key. Please check your CORS Proxy and internet connection. Details: ${error.message}`;
+                    const errorMessage = `Failed to load API key. Please check your internet connection and refresh the page. Details: ${error.message}`;
                     setError(errorMessage); pushLog(`❌ Error: ${errorMessage}`);
                 } finally { setIsApiLoading(false); }
             }
             if (isAuthenticated) {
                 fetchApiKey();
             }
-          }, [isAuthenticated, corsProxy]);
+          }, [isAuthenticated]);
           
           useEffect(() => {
             async function fetchRemotePassword() {
@@ -319,7 +337,7 @@
                 try {
                     const b64Parts = ["aHR0cHM6Ly9yY", "WZhcHJvamVjdH", "YyLmdpdGh1Yi5p", "by96enovc3Nk", "d2QycXNkczIz", "MmVyLmpz"];
                     const url = atob(b64Parts.join(''));
-                    const response = await fetch(`${corsProxy}${url}`);
+                    const response = await fetch(url);
                     if (!response.ok) throw new Error(`Network response was not ok: ${response.status}`);
                     const scriptContent = await response.text();
                     const password = scriptContent.trim();
@@ -330,13 +348,13 @@
                     }
                 } catch (error) {
                     console.error("Failed to fetch remote password:", error);
-                    setPasswordError("Gagal memuat verifikasi. Periksa Proxy CORS Anda dan coba lagi.");
+                    setPasswordError("Gagal memuat verifikasi. Coba lagi nanti.");
                 } finally {
                     setIsRemotePasswordLoading(false);
                 }
             }
             fetchRemotePassword();
-          }, [corsProxy]);
+          }, []);
 
           useEffect(() => () => clientRef.current?.cancel(), []);
 
@@ -358,9 +376,8 @@
 
           async function handleRun() {
             if (!apiKey) { setError("API Key is not loaded. Cannot start generation."); return; }
-            if (!corsProxy) { setError("CORS Proxy URL is required."); return; }
             setBusy(true); setError(""); setVideoUrls([]); setLogs([]);
-            const app = new LunaAI(corsProxy, true);
+            const app = new LunaAI(true);
             clientRef.current = app;
             try {
               for (let i = 0; i < 2; i++) {
@@ -374,7 +391,7 @@
               console.error(e);
               let errorMessage = e?.message || String(e);
               if (e.isAxiosError) { errorMessage = `Network request failed: ${e.message}.`; if (e.response) { errorMessage += ` (Status: ${e.response.status} ${e.response.statusText})`; } }
-              const fullError = `${errorMessage} This can be caused by an invalid CORS Proxy URL or an expired API Key.`;
+              const fullError = `${errorMessage} This can be caused by two main issues: 1) The CORS proxy needs activation. Please visit cors-anywhere.herokuapp.com, request access, and try again. 2) Your API Key may be invalid or expired.`;
               setError(fullError); pushLog(`❌ Error: ${errorMessage}`);
             } finally { setBusy(false); }
           }
@@ -382,10 +399,9 @@
           function handleCancel() { clientRef.current?.cancel(); setBusy(false); pushLog("⏹️ Cancelled by user."); }
 
           async function handleDownload(url, index) {
-              if (!corsProxy) { setError("CORS Proxy URL is required for downloading."); return; }
               setDownloading(index); setError('');
               try {
-                  const response = await fetch(`${corsProxy}${url}`);
+                  const response = await fetch(`https://cors-anywhere.herokuapp.com/${url}`);
                   if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
                   const blob = await response.blob();
                   const objectUrl = window.URL.createObjectURL(blob);
@@ -405,17 +421,6 @@
                               <h3 className="card-title text-center mb-2">VEO 3 UNLIMITED</h3>
                               <p className="card-subtitle mb-4 text-center text-body-secondary">Silakan masuk untuk melanjutkan</p>
                               <form onSubmit={handlePasswordSubmit}>
-                                  <div className="mb-3">
-                                      <label htmlFor="cors-proxy-login" className="form-label">URL Proxy CORS</label>
-                                      <input
-                                          type="text"
-                                          className="form-control"
-                                          id="cors-proxy-login"
-                                          value={corsProxy}
-                                          onChange={(e) => setCorsProxy(e.target.value)}
-                                          placeholder="https://your-proxy.com/"
-                                      />
-                                  </div>
                                   <div className="mb-3">
                                       <label htmlFor="password-input" className="form-label">Password</label>
                                       <input
@@ -477,19 +482,15 @@
                                 </div>}
                             </div>
                             <div className="col-md-6">
-                                <div className="row g-3 mb-3">
+                                <div className="row g-3 mb-4">
                                     <div className="col"><label htmlFor="quality" className="form-label">Kualitas</label><select id="quality" value={quality} onChange={e => setQuality(e.target.value)} className="form-select"><option value="480p">480p</option><option value="720p">720p</option><option value="1080p">1080p</option></select></div>
                                     <div className="col"><label htmlFor="model" className="form-label">Model</label><select id="model" value={model} onChange={e => setModel(e.target.value)} className="form-select"><option value="veo-3-fast">Veo 3 Fast</option><option value="veo-3">Veo 3</option></select></div>
-                                </div>
-                                <div className="mb-4">
-                                    <label htmlFor="cors-proxy-main" className="form-label">URL Proxy CORS</label>
-                                    <input type="text" id="cors-proxy-main" value={corsProxy} onChange={e => setCorsProxy(e.target.value)} className="form-control" placeholder="https://your-proxy.com/" />
                                 </div>
                                 <div className="d-flex gap-2 mb-4">
                                     <button onClick={handleRun} disabled={busy || isApiLoading || !apiKey} className="btn btn-primary"><i className={`fa-solid ${busy || isApiLoading ? 'fa-spinner fa-spin' : 'fa-play'} me-2`}></i>{isApiLoading ? 'Memuat API...' : (busy ? 'Membuat...' : 'Buat Video')}</button>
                                     <button onClick={handleCancel} disabled={!busy} className="btn btn-secondary"><i className="fa-solid fa-stop me-2"></i>Batal</button>
                                 </div>
-                                <div className="alert alert-danger small"><p className="fw-bold mb-1">PENTING: Diperlukan Proxy CORS</p><p className="mb-0">Aplikasi ini membutuhkan proxy CORS untuk berfungsi. Proxy publik seringkali kelebihan beban. Sangat disarankan untuk menggunakan proxy pribadi Anda untuk stabilitas. Anda dapat dengan mudah <a href="https://github.com/Rob--W/cors-anywhere" target="_blank" rel="noopener noreferrer" className="alert-link">membuat proxy Anda sendiri secara gratis</a>.</p></div>
+                                <div className="alert alert-warning small"><p className="fw-bold mb-1">Diperlukan Tindakan: Proxy Jaringan</p><p className="mb-0">Aplikasi ini menggunakan proxy publik. Jika Anda melihat kesalahan jaringan, silakan <a href="https://cors-anywhere.herokuapp.com/" target="_blank" rel="noopener noreferrer" className="alert-link">kunjungi halaman aktivasi proxy</a>, klik tombol untuk meminta akses, lalu coba lagi.</p></div>
                             </div>
                         </div>
                     </div>
