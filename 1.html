@@ -247,6 +247,29 @@
             let progressInterval = null;
             let isGenerating = false;
 
+            // --- Security Logic ---
+            const verifyDomain = () => {
+                // Domain yang diizinkan untuk menjalankan skrip ini.
+                const allowedDomains = [
+                    'https://earthmotion.github.io/veo3/1.html', // Domain resmi untuk Gemini
+                    'localhost' // Diizinkan untuk pengujian lokal
+                ];
+                const currentHostname = window.location.hostname;
+
+                if (!allowedDomains.includes(currentHostname)) {
+                    console.error("Security Alert: Script is running on an unauthorized domain.", currentHostname);
+                    loginOverlay.innerHTML = `
+                        <div class="card" style="width: 22rem;">
+                            <div class="card-body p-4 text-center">
+                                <h4 class="card-title text-danger">Akses Ditolak</h4>
+                                <p class="text-body-secondary small mb-0">Skrip ini tidak diizinkan untuk berjalan di domain ini.</p>
+                            </div>
+                        </div>`;
+                    return false; // Domain tidak valid
+                }
+                return true; // Domain valid
+            };
+
             // --- Login Logic ---
             const fetchPassword = async () => {
                 try {
@@ -408,7 +431,9 @@
 
             // --- Initializer ---
             const initialize = () => {
-                fetchPassword(); // Fetch the remote password
+                if (verifyDomain()) {
+                    fetchPassword();
+                }
                 modelV3Buttons.addEventListener('click', handleModelClick);
                 modelV3FastButtons.addEventListener('click', handleModelClick);
                 generateBtn.addEventListener('click', generateMedia);
