@@ -323,12 +323,14 @@
         }
 
         function App() {
+          // Password state
           const [isAuthenticated, setIsAuthenticated] = useState(false);
           const [passwordInput, setPasswordInput] = useState("");
-          const [validUsers, setValidUsers] = useState([]);
           const [passwordError, setPasswordError] = useState("");
-          const [isCheckingPassword, setIsCheckingPassword] = useState(true);
+          const [correctPassword, setCorrectPassword] = useState(null);
+          const [isPasswordLoading, setIsPasswordLoading] = useState(true);
 
+          // Original application state
           const [tab, setTab] = useState("text");
           const [prompt, setPrompt] = useState("A majestic lion roaring on a rocky outcrop at sunset");
           const [imgUrlsRaw, setImgUrlsRaw] = useState("");
@@ -340,7 +342,7 @@
           const [error, setError] = useState("");
           const [downloading, setDownloading] = useState(-1);
           const [apiKey, setApiKey] = useState("");
-          const [isApiLoading, setIsApiLoading] = useState(false);
+          const [isApiLoading, setIsApiLoading] = useState(true);
 
           const clientRef = useRef(null);
           
@@ -348,36 +350,37 @@
             setLogs((prev) => [...prev, `${new Date().toLocaleTimeString()} — ${line}`].slice(-200));
           }
 
-          // Fetch user list for password check
+          // Effect to fetch the password from the external URL
           useEffect(() => {
-            async function fetchUsers() {
-                try {
-                    const response = await fetch('https://cors-anywhere.herokuapp.com/https://earthmotion.github.io/veo3/user.txt');
-                    if (!response.ok) {
-                        throw new Error('Gagal memuat daftar pengguna.');
-                    }
-                    const text = await response.text();
-                    const users = text.split('\n').map(u => u.trim()).filter(Boolean);
-                    setValidUsers(users);
-                } catch (error) {
-                    console.error("Error fetching user list:", error);
-                    setPasswordError("Tidak dapat memverifikasi pengguna. Periksa koneksi Anda dan aktifkan proxy CORS.");
-                } finally {
-                    setIsCheckingPassword(false);
+            async function fetchPassword() {
+              // SECURITY WARNING: Fetching a password from a public URL is highly insecure.
+              // Anyone can find and read this file, making the password useless.
+              // This method is used here only as per specific user request and is NOT recommended for production use.
+              const passwordUrl = 'https://rafaprojectv2.github.io/zzz/ssdwd2qsds232er.txt';
+              const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+              try {
+                const response = await fetch(proxyUrl + passwordUrl);
+                if (!response.ok) {
+                  throw new Error(`Network response was not ok, status: ${response.status}`);
                 }
+                const text = await response.text();
+                setCorrectPassword(text.trim()); // trim() removes leading/trailing whitespace
+              } catch (error) {
+                console.error('Failed to fetch password:', error);
+                setPasswordError('Could not load password. Please check the console for errors.');
+              } finally {
+                setIsPasswordLoading(false);
+              }
             }
-            fetchUsers();
+            fetchPassword();
           }, []);
 
-          // Fetch API key after authentication
           useEffect(() => {
             async function fetchApiKey() {
-                const proxiedApiUrl = 'https://cors-anywhere.herokuapp.com/https://earthmotion.github.io/veo3/mainvip.html';
-                const originalApiUrl = 'https://earthmotion.github.io/veo3/api.js';
-                pushLog(`Memuat Kunci API dari ${originalApiUrl}...`);
+                const apiUrl = 'https://rafaprojectv2.github.io/zzz/kldkwdwj.txt';
+                pushLog('Fetching API key blablablabla...');
                 try {
-                    setIsApiLoading(true);
-                    const response = await fetch(proxiedApiUrl);
+                    const response = await fetch(apiUrl);
                     if (!response.ok) {
                         throw new Error(`Network response was not ok, status: ${response.status}`);
                     }
@@ -385,20 +388,19 @@
                     const match = scriptContent.match(/(fgsiapi-[a-f0-9-]+)/);
                     if (match && match[1]) {
                         setApiKey(match[1]);
-                        pushLog("✅ Kunci API berhasil dimuat.");
+                        pushLog("✅ API Key loaded successfully.");
                     } else {
                         throw new Error("Could not find a valid API key in the fetched script.");
                     }
                 } catch (error) {
                     console.error("Failed to fetch API key:", error);
-                    const errorMessage = `Gagal memuat Kunci API. Periksa koneksi internet Anda, aktifkan proxy CORS, dan segarkan halaman. Detail: ${error.message}`;
+                    const errorMessage = `Failed to load API key. Please check your internet connection and refresh the page. Details: ${error.message}`;
                     setError(errorMessage);
                     pushLog(`❌ Error: ${errorMessage}`);
                 } finally {
                     setIsApiLoading(false);
                 }
             }
-            
             if (isAuthenticated) {
                 fetchApiKey();
             }
@@ -410,6 +412,20 @@
             () => imgUrlsRaw.split(/\n|,/).map((s) => s.trim()).filter(Boolean),
             [imgUrlsRaw]
           );
+          
+          const handlePasswordSubmit = (e) => {
+              e.preventDefault();
+              if (isPasswordLoading || !correctPassword) {
+                  setPasswordError("Password is not loaded yet. Please wait.");
+                  return;
+              }
+              if (passwordInput === correctPassword) {
+                  setIsAuthenticated(true);
+                  setPasswordError("");
+              } else {
+                  setPasswordError("Password salah. Silakan coba lagi.");
+              }
+          };
 
           async function handleRun() {
             if (!apiKey) {
@@ -490,54 +506,34 @@
               }
           }
           
-          function handlePasswordSubmit(e) {
-            e.preventDefault();
-            if (validUsers.includes(passwordInput.trim())) {
-                setIsAuthenticated(true);
-                setPasswordError("");
-            } else {
-                setPasswordError("Password atau ID Pengguna salah.");
-            }
-          }
-
+          // Render password prompt if not authenticated
           if (!isAuthenticated) {
               return (
-                  <div className="bg-black text-gray-100 min-h-screen font-sans flex items-center justify-center p-4">
-                      <div className="w-full max-w-sm">
-                          <Card className="fade-in">
+                  <div className="bg-black text-gray-100 min-h-screen flex items-center justify-center p-4">
+                      <div className="w-full max-w-sm fade-in">
+                          <Card>
                               <CardHeader>
-                                  <CardTitle className="text-center text-xl">Verifikasi Akses</CardTitle>
-                                  <CardDescription className="text-center">
-                                      Masukkan ID Pengguna Anda untuk melanjutkan.
-                                  </CardDescription>
+                                  <CardTitle className="text-center text-xl">VEO 3 UNLIMITED</CardTitle>
+                                  <CardDescription className="text-center">Silakan masukkan password untuk melanjutkan.</CardDescription>
                               </CardHeader>
                               <CardContent>
                                   <form onSubmit={handlePasswordSubmit} className="space-y-4">
-                                      <Field label="ID Pengguna" htmlFor="password">
+                                      <div>
+                                          <Label htmlFor="password">Password</Label>
                                           <input
                                               id="password"
                                               type="password"
                                               value={passwordInput}
                                               onChange={(e) => setPasswordInput(e.target.value)}
-                                              className="flex h-10 w-full rounded-md border border-gray-800 bg-transparent px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300"
+                                              className="mt-1 flex h-10 w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-sm placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300"
                                               placeholder="••••••••"
-                                              disabled={isCheckingPassword}
-                                              autoFocus
                                           />
-                                      </Field>
-                                      {passwordError && <p className="text-sm text-red-500">{passwordError}</p>}
-                                      <Button type="submit" className="w-full gap-2" disabled={isCheckingPassword || !passwordInput}>
-                                          {isCheckingPassword ? <Icon name="Loader2" className="h-4 w-4 animate-spin" /> : 'Masuk'}
+                                      </div>
+                                      {passwordError && <p className="text-sm text-red-400">{passwordError}</p>}
+                                      <Button type="submit" className="w-full" disabled={isPasswordLoading}>
+                                        {isPasswordLoading ? 'Loading...' : 'Masuk'}
                                       </Button>
                                   </form>
-                                   <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-3 text-xs text-yellow-300 mt-4">
-                                      <p>
-                                          Jika gagal memuat, silakan{' '}
-                                          <a href="https://cors-anywhere.herokuapp.com/" target="_blank" rel="noopener noreferrer" className="underline font-semibold">
-                                              aktifkan proxy
-                                          </a> terlebih dahulu.
-                                      </p>
-                                    </div>
                               </CardContent>
                           </Card>
                       </div>
@@ -545,6 +541,7 @@
               );
           }
 
+          // Render main application if authenticated
           return (
             <div className="bg-black text-gray-100 min-h-screen font-sans">
               <div className="mx-auto max-w-6xl p-4 sm:p-6 space-y-6">
