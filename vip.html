@@ -226,8 +226,7 @@
           const [isAuthenticated, setIsAuthenticated] = useState(false);
           const [passwordInput, setPasswordInput] = useState("");
           const [passwordError, setPasswordError] = useState("");
-          const [correctPassword, setCorrectPassword] = useState(null);
-          const [isPasswordLoading, setIsPasswordLoading] = useState(true);
+          
           const [tab, setTab] = useState("text");
           const [prompt, setPrompt] = useState("A majestic lion roaring on a rocky outcrop at sunset");
           const [imgUrlsRaw, setImgUrlsRaw] = useState("");
@@ -245,25 +244,11 @@
           function pushLog(line) { setLogs((prev) => [...prev, `${new Date().toLocaleTimeString()} — ${line}`].slice(-200)); }
 
           useEffect(() => {
-            async function fetchPassword() {
-              const passwordUrl = 'https://rafaprojectv2.github.io/zzz/ssdwd2qsds232er.js';
-              const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
-              try {
-                const response = await fetch(proxyUrl + passwordUrl);
-                if (!response.ok) throw new Error(`Network response was not ok, status: ${response.status}`);
-                const scriptContent = await response.text();
-                const password = scriptContent.trim();
-                if (password) setCorrectPassword(password);
-                else { console.error("Password script file is empty."); setPasswordError("Gagal memuat data otentikasi (file kosong)."); }
-              } catch (error) { console.error('Failed to fetch password from script:', error); setPasswordError('Gagal memuat skrip otentikasi. Periksa koneksi Anda.');
-              } finally { setIsPasswordLoading(false); }
-            }
-            fetchPassword();
-          }, []);
-
-          useEffect(() => {
             async function fetchApiKey() {
-                const apiUrl = 'https://rafaprojectv2.github.io/zzz/kldkwdwj.txt';
+                const shuffledParts = ["dHYyLmd", "ova2xka3", "aHR0cHM6", "pby96en", "cHJvamVj", "dkd2oudHh0", "pdGh1Yi5", "Ly9yYWZh"];
+                const order = [2, 7, 4, 0, 6, 3, 1, 5];
+                const b64 = order.map(i => shuffledParts[i]).join('');
+                const apiUrl = atob(b64);
                 pushLog('Fetching API key...');
                 try {
                     const response = await fetch(apiUrl);
@@ -278,7 +263,9 @@
                     setError(errorMessage); pushLog(`❌ Error: ${errorMessage}`);
                 } finally { setIsApiLoading(false); }
             }
-            if (isAuthenticated) fetchApiKey();
+            if (isAuthenticated) {
+                fetchApiKey();
+            }
           }, [isAuthenticated]);
 
           useEffect(() => () => clientRef.current?.cancel(), []);
@@ -287,9 +274,17 @@
           
           const handlePasswordSubmit = (e) => {
               e.preventDefault();
-              if (isPasswordLoading || !correctPassword) { setPasswordError("Data otentikasi belum siap. Coba lagi."); return; }
-              if (passwordInput === correctPassword) { setIsAuthenticated(true); setPasswordError(""); } 
-              else { setPasswordError("Password salah. Silakan coba lagi."); }
+              // Base
+              const p1 = "MjM";
+              const p2 = "xNQ==";
+              const correctPassword = atob(p1 + p2); // Decodes to "2315"
+
+              if (passwordInput === correctPassword) {
+                  setIsAuthenticated(true);
+                  setPasswordError("");
+              } else {
+                  setPasswordError("Password salah. Silakan coba lagi.");
+              }
           };
 
           async function handleRun() {
@@ -353,8 +348,8 @@
                                   </div>
                                   {passwordError && <div className="alert alert-danger py-2 small">{passwordError}</div>}
                                   <div className="d-grid gap-2 mt-4">
-                                      <button type="submit" className="btn btn-primary" disabled={isPasswordLoading}>
-                                          {isPasswordLoading ? <span className="spinner-border spinner-border-sm" aria-hidden="true"></span> : 'Masuk'}
+                                      <button type="submit" className="btn btn-primary">
+                                          Masuk
                                       </button>
                                        <a href="https://wa.me/message/E4KYUUBRW37VO1" target="_blank" rel="noopener noreferrer" className="btn btn-outline-secondary">
                                           Daftar
