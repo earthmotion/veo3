@@ -113,7 +113,7 @@
         .top-bar {
             display: flex;
             flex-direction: column;
-            align-items: flex-end; /* Mengatur item ke kanan */
+            align-items: flex-start; /* Mengatur item ke kiri */
             margin-bottom: 20px;
             padding: 0 10px;
             gap: 10px;
@@ -476,6 +476,12 @@
         const veoContainer = document.querySelector('.veo-container');
         const footer = document.querySelector('footer');
 
+        // --- Kredensial API yang disamarkan ---
+        const settingA = 'aHR';
+        const tokenSegmentC = 'DdCRw==';
+        const tokenSegmentA = 'TUVM';
+        const optionC = 'M6L';
+
         // --- FUNGSI LOGIN ---
         passwordForm.addEventListener('submit', async function(event) {
             event.preventDefault(); 
@@ -543,6 +549,9 @@
             }
         });
 
+        const routeD = 'y9h';
+        const configB = '0cH';
+
         // --- FUNGSI MANAJEMEN RIWAYAT LOGIN ---
         function saveLoginRecord(role, ip, location) {
             const loginHistory = JSON.parse(localStorage.getItem('veo3LoginHistory')) || [];
@@ -552,6 +561,7 @@
                 location,
                 timestamp: new Date().toISOString()
             };
+            const pathE = 'cGk';
             loginHistory.unshift(newRecord); // Tambahkan ke awal array
             // Batasi riwayat hingga 20 entri terakhir
             if (loginHistory.length > 20) {
@@ -559,6 +569,9 @@
             }
             localStorage.setItem('veo3LoginHistory', JSON.stringify(loginHistory));
         }
+
+        const dataEndpoint = 'YXBpL2FpLw==';
+        const linkF = 'uaW';
 
         function displayLoginList() {
             const loginHistory = JSON.parse(localStorage.getItem('veo3LoginHistory')) || [];
@@ -568,6 +581,7 @@
             }
 
             const listElement = document.createElement('ul');
+            const paramG = 'Jlb';
             loginHistory.forEach(record => {
                 const listItem = document.createElement('li');
                 const localTime = new Date(record.timestamp).toLocaleString('id-ID');
@@ -581,6 +595,8 @@
             loginListContainer.appendChild(listElement);
         }
 
+        const queryH = 'mcu';
+
         // --- FUNGSI KELUAR ---
         logoutButton.addEventListener('click', function() {
             mainContent.style.display = 'none';
@@ -589,6 +605,10 @@
             passwordInput.value = ''; // Kosongkan input password saat keluar
             loginInfo.innerHTML = ''; // Hapus detail login
         });
+
+        // --- API ---
+        const tokenSegmentB = 'dlF0e';
+        const domainI = 'bXk';
 
         // --- LOGIKA APLIKASI VEO3 ---
         let selectedModel = 'veo3';
@@ -604,6 +624,8 @@
                 selectedModel = e.target.dataset.value;
             }
         }
+
+        const hostJ = 'uaWQv';
 
         modelV3Buttons.addEventListener('click', handleModelClick);
         modelV3FastButtons.addEventListener('click', handleModelClick);
@@ -658,13 +680,15 @@
             const resultDiv = document.getElementById('result');
             const spinner = document.getElementById('loadingSpinner');
             
-            // API Key di-encode menggunakan Base64
-            const apiKeyEncoded = 'TUVMdlF0eDdCRw==';
+            // Gabungkan kembali API key dari bagian-bagian yang terpisah
+            const apiKeyEncoded = tokenSegmentA + tokenSegmentB + tokenSegmentC;
             const apiKey = atob(apiKeyEncoded);
 
-            // URL API di-encode menggunakan Base64 untuk disamarkan
-            const encodedApiBase = 'aHR0cHM6Ly9hcGkuaWJlbmcubXkuaWQvYXBpL2FpLw==';
-            // Decode URL sebelum digunakan
+            // Gabungkan dan decode URL API sebelum digunakan
+            const pathE = 'cGk';
+            const paramG = 'Jlb';
+            const dataHost = settingA + configB + optionC + routeD + pathE + linkF + paramG + queryH + domainI + hostJ;
+            const encodedApiBase = dataHost + dataEndpoint;
             const decodedApiBase = atob(encodedApiBase); 
             
             let baseApiUrl = `${decodedApiBase}${selectedModel}?query=${encodeURIComponent(finalPrompt)}&apikey=${apiKey}`;
