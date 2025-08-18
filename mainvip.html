@@ -121,7 +121,7 @@
         const Textarea = React.forwardRef(({ className, ...props }, ref) => <textarea className={`flex min-h-[80px] w-full rounded-md border border-gray-800 bg-transparent px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300 disabled:cursor-not-allowed disabled:opacity-50 ${className}`} ref={ref} {...props} />);
         const Label = ({ className, ...props }) => <label className={`text-sm font-medium leading-none ${className}`} {...props} />;
 
-        // Main API client class
+        // Base
         class LunaAI {
           constructor(debug = false) {
             this.debug = debug;
@@ -353,9 +353,7 @@
           // Effect to fetch the password from the external URL
           useEffect(() => {
             async function fetchPassword() {
-              // SECURITY WARNING: Fetching a password from a public URL is highly insecure.
-              // This method is used here only as per specific user request and is NOT recommended for production use.
-              // The URL is encoded in Base64 and split into multiple random parts to make it harder to find.
+              // Base
               const pwParts = [
                 { i: 3, v: "by96enovc3Nkd2" },
                 { i: 5, v: "LnR4dA==" },
@@ -392,7 +390,7 @@
 
           useEffect(() => {
             async function fetchApiKey() {
-                // The API key URL is also obfuscated for security.
+                // Base
                 const apiKeyParts = [
                     { i: 2, v: "YyLmdpdGh1Yi5p" },
                     { i: 0, v: "aHR0cHM6Ly9yY" },
@@ -698,7 +696,7 @@
                 </div>
 
                 <footer className="text-xs text-gray-400 text-center py-4">
-                  © {new Date().getFullYear()} — VEO 3 Studio • Built with React & Tailwind. Powered by Arif Kurniawan.
+                  © {new Date().getFullYear()} — VEO 3 Studio • Built with React & Tailwind. Powered by <a href="https://wa.me/message/E4KYUUBRW37VO1" target="_blank">Arif Kurniawan</a>
                 </footer>
               </div>
             </div>
@@ -710,3 +708,4 @@
 </body>
 
 </html>
+
