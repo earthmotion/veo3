@@ -277,8 +277,19 @@
           const [passwordInput, setPasswordInput] = useState("");
           const [passwordError, setPasswordError] = useState("");
           
+          const samplePrompts = [
+              "A futuristic city skyline at night, with flying cars and neon lights.",
+              "A serene Japanese garden with a koi pond and cherry blossoms in full bloom.",
+              "An astronaut floating in space, looking at Earth from the window of a spaceship.",
+              "A detailed close-up of a honeybee collecting nectar from a vibrant flower.",
+              "A fantasy landscape with floating islands and waterfalls cascading into the clouds.",
+              "A cozy library with floor-to-ceiling bookshelves and a crackling fireplace.",
+              "A majestic eagle soaring over a snow-capped mountain range.",
+              "A bustling medieval marketplace with merchants and townspeople."
+          ];
+
           const [tab, setTab] = useState("text");
-          const [prompt, setPrompt] = useState("A majestic lion roaring on a rocky outcrop at sunset");
+          const [prompt, setPrompt] = useState(samplePrompts[Math.floor(Math.random() * samplePrompts.length)]);
           const [imgUrlsRaw, setImgUrlsRaw] = useState("");
           const [quality, setQuality] = useState("720p");
           const [model, setModel] = useState("veo-3-fast");
@@ -462,7 +473,7 @@
                 <div className="row g-4">
                     <div className="col-lg-8">
                         <div className="card h-100">
-                            <div className="card-header"><h5 className="card-title mb-0">Pratinjau Video</h5><p className="card-text text-body-secondary small">Menampilkan cuplikan hasil video yang Anda buat.</p></div>
+                            <div className="card-header"><h5 className="card-title mb-0">Pratinau Video</h5><p className="card-text text-body-secondary small">Menampilkan cuplikan hasil video yang Anda buat.</p></div>
                             <div className="card-body">
                                 {videoUrls.length > 0 ? (
                                     <div className="row row-cols-1 row-cols-sm-2 g-3">
