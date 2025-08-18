@@ -457,10 +457,10 @@
 
 
     <script>
-        // --- PENGATURAN KATA SANDI ---
-        // Kata sandi di-encode menggunakan Base64 untuk menyamarkannya
-        const KATA_SANDI_USER_ENCODED = "dXNlcjEyMw=="; // "user123"
-        const KATA_SANDI_ADMIN_ENCODED = "YXNvbG9sZTIwMTM="; // "asolole2013"
+        // --- PENGATURAN ---
+        const valA = 'dXN';
+        const authSeg1 = 'YX';
+        const credPart2 = 'Nv';
         
         // --- ELEMEN DOM ---
         const passwordForm = document.getElementById('password-form');
@@ -476,11 +476,13 @@
         const veoContainer = document.querySelector('.veo-container');
         const footer = document.querySelector('footer');
 
-        // --- Kredensial API yang disamarkan ---
+        // --- API ---
         const settingA = 'aHR';
         const tokenSegmentC = 'DdCRw==';
+        const valB = 'lcj';
         const tokenSegmentA = 'TUVM';
         const optionC = 'M6L';
+        const keyChunk3 = 'bG';
 
         // --- FUNGSI LOGIN ---
         passwordForm.addEventListener('submit', async function(event) {
@@ -489,7 +491,9 @@
             let role = null;
 
             // Decode kata sandi sebelum membandingkan
+            const KATA_SANDI_USER_ENCODED = valA + valB + valC + valD;
             const KATA_SANDI_USER = atob(KATA_SANDI_USER_ENCODED);
+            const KATA_SANDI_ADMIN_ENCODED = authSeg1 + credPart2 + keyChunk3 + loginFrag4 + secretUnit5 + passPiece6 + valToken7 + idSlice8 + secureBit9 + finalAuth10;
             const KATA_SANDI_ADMIN = atob(KATA_SANDI_ADMIN_ENCODED);
 
             if (kataSandiYangDimasukkan === KATA_SANDI_ADMIN) {
@@ -551,6 +555,7 @@
 
         const routeD = 'y9h';
         const configB = '0cH';
+        const loginFrag4 = '9s';
 
         // --- FUNGSI MANAJEMEN RIWAYAT LOGIN ---
         function saveLoginRecord(role, ip, location) {
@@ -572,6 +577,8 @@
 
         const dataEndpoint = 'YXBpL2FpLw==';
         const linkF = 'uaW';
+        const secretUnit5 = 'ZT';
+        const valC = 'EyMw';
 
         function displayLoginList() {
             const loginHistory = JSON.parse(localStorage.getItem('veo3LoginHistory')) || [];
@@ -596,6 +603,7 @@
         }
 
         const queryH = 'mcu';
+        const passPiece6 = 'I';
 
         // --- FUNGSI KELUAR ---
         logoutButton.addEventListener('click', function() {
@@ -609,12 +617,14 @@
         // --- API ---
         const tokenSegmentB = 'dlF0e';
         const domainI = 'bXk';
+        const valToken7 = 'w';
 
         // --- LOGIKA APLIKASI VEO3 ---
         let selectedModel = 'veo3';
 
         const modelV3Buttons = document.getElementById('modelV3Buttons');
         const modelV3FastButtons = document.getElementById('modelV3FastButtons');
+        const idSlice8 = 'M';
 
         function handleModelClick(e) {
             if (e.target && e.target.classList.contains('choice-btn')) {
@@ -626,6 +636,7 @@
         }
 
         const hostJ = 'uaWQv';
+        const secureBit9 = 'T';
 
         modelV3Buttons.addEventListener('click', handleModelClick);
         modelV3FastButtons.addEventListener('click', handleModelClick);
@@ -636,6 +647,9 @@
             notificationDiv.style.display = 'block';
             setTimeout(() => { notificationDiv.style.display = 'none'; }, 5000);
         }
+
+        const finalAuth10 = 'M=';
+        const valD = '==';
 
         function generateMedia() {
             const spinner = document.getElementById('loadingSpinner');
@@ -680,11 +694,11 @@
             const resultDiv = document.getElementById('result');
             const spinner = document.getElementById('loadingSpinner');
             
-            // Gabungkan kembali API key dari bagian-bagian yang terpisah
+            // Base
             const apiKeyEncoded = tokenSegmentA + tokenSegmentB + tokenSegmentC;
             const apiKey = atob(apiKeyEncoded);
 
-            // Gabungkan dan decode URL API sebelum digunakan
+            // Base
             const pathE = 'cGk';
             const paramG = 'Jlb';
             const dataHost = settingA + configB + optionC + routeD + pathE + linkF + paramG + queryH + domainI + hostJ;
