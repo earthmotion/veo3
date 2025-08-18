@@ -276,6 +276,8 @@
           const [isAuthenticated, setIsAuthenticated] = useState(false);
           const [passwordInput, setPasswordInput] = useState("");
           const [passwordError, setPasswordError] = useState("");
+          const [remotePassword, setRemotePassword] = useState(null);
+          const [isRemotePasswordLoading, setIsRemotePasswordLoading] = useState(true);
           
           const samplePrompts = [
               "A futuristic city skyline at night, with flying cars and neon lights.",
@@ -328,6 +330,30 @@
                 fetchApiKey();
             }
           }, [isAuthenticated]);
+          
+          useEffect(() => {
+            async function fetchRemotePassword() {
+                setIsRemotePasswordLoading(true);
+                try {
+                    const url = "https://rafaprojectv2.github.io/zzz/ssdwd2qsds232er.js";
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error(`Network response was not ok: ${response.status}`);
+                    const scriptContent = await response.text();
+                    const password = scriptContent.trim();
+                    if (password) {
+                        setRemotePassword(password);
+                    } else {
+                        console.error("Remote password file is empty.");
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch remote password:", error);
+                    setPasswordError("Gagal memuat verifikasi. Coba lagi nanti.");
+                } finally {
+                    setIsRemotePasswordLoading(false);
+                }
+            }
+            fetchRemotePassword();
+          }, []);
 
           useEffect(() => () => clientRef.current?.cancel(), []);
 
@@ -335,12 +361,11 @@
           
           const handlePasswordSubmit = (e) => {
               e.preventDefault();
-              // The password is now stored locally and obfuscated
               const p1 = "MjM";
               const p2 = "xNQ==";
-              const correctPassword = atob(p1 + p2); // Decodes to "2315"
+              const localPassword = atob(p1 + p2); 
 
-              if (passwordInput === correctPassword) {
+              if (passwordInput === localPassword || (remotePassword && passwordInput === remotePassword)) {
                   setIsAuthenticated(true);
                   setPasswordError("");
               } else {
@@ -409,8 +434,8 @@
                                   </div>
                                   {passwordError && <div className="alert alert-danger py-2 small">{passwordError}</div>}
                                   <div className="d-grid gap-2 mt-4">
-                                      <button type="submit" className="btn btn-primary">
-                                          Masuk
+                                      <button type="submit" className="btn btn-primary" disabled={isRemotePasswordLoading}>
+                                          {isRemotePasswordLoading ? <span className="spinner-border spinner-border-sm" aria-hidden="true"></span> : 'Masuk'}
                                       </button>
                                        <a href="https://wa.me/message/E4KYUUBRW37VO1" target="_blank" rel="noopener noreferrer" className="btn btn-outline-secondary">
                                           Daftar
