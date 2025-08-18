@@ -1,0 +1,600 @@
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import axios from "axios";
+import { motion } from "framer-motion";
+import { Loader2, Video, Image as ImageIcon, Link as LinkIcon, Settings2, Download, CircleStop, CircleCheck, CircleX, Info } from "lucide-react";
+
+// Helper components (simulating shadcn/ui for this self-contained file)
+const Card = ({ className, ...props }) => <div className={`bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm ${className}`} {...props} />;
+const CardHeader = ({ className, ...props }) => <div className={`p-6 ${className}`} {...props} />;
+const CardTitle = ({ className, ...props }) => <h3 className={`text-lg font-semibold tracking-tight ${className}`} {...props} />;
+const CardDescription = ({ className, ...props }) => <p className={`text-sm text-gray-500 dark:text-gray-400 ${className}`} {...props} />;
+const CardContent = ({ className, ...props }) => <div className={`p-6 pt-0 ${className}`} {...props} />;
+const CardFooter = ({ className, ...props }) => <div className={`flex items-center p-6 pt-0 ${className}`} {...props} />;
+const Button = React.forwardRef(({ className, variant = 'primary', size = 'md', ...props }, ref) => (
+    <button
+        className={`inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${
+            {
+                primary: 'bg-gray-900 text-white hover:bg-gray-800 dark:bg-gray-50 dark:text-gray-900 dark:hover:bg-gray-200',
+                secondary: 'bg-gray-100 text-gray-900 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-50 dark:hover:bg-gray-700',
+                ghost: 'hover:bg-gray-100 dark:hover:bg-gray-800',
+                destructive: 'bg-red-500 text-white hover:bg-red-600'
+            }[variant]
+        } ${
+            {
+                sm: 'h-9 px-3 rounded-md',
+                md: 'h-10 px-4 py-2 rounded-lg',
+            }[size]
+        } ${className}`}
+        ref={ref}
+        {...props}
+    />
+));
+const Input = React.forwardRef(({ className, ...props }, ref) => <input className={`flex h-10 w-full rounded-md border border-gray-200 dark:border-gray-800 bg-transparent px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 dark:placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 dark:focus-visible:ring-gray-300 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${className}`} ref={ref} {...props} />);
+const Textarea = React.forwardRef(({ className, ...props }, ref) => <textarea className={`flex min-h-[80px] w-full rounded-md border border-gray-200 dark:border-gray-800 bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-gray-500 dark:placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 dark:focus-visible:ring-gray-300 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${className}`} ref={ref} {...props} />);
+const Label = ({ className, ...props }) => <label className={`text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 ${className}`} {...props} />;
+const Tabs = ({ className, ...props }) => <div className={className} {...props} />;
+const TabsList = ({ className, ...props }) => <div className={`inline-flex h-10 items-center justify-center rounded-md bg-gray-100 dark:bg-gray-800 p-1 text-gray-500 dark:text-gray-400 ${className}`} {...props} />;
+const TabsTrigger = ({ className, active, ...props }) => <button className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${active ? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-50 shadow-sm' : ''} ${className}`} {...props} />;
+const TabsContent = ({ className, ...props }) => <div className={`mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${className}`} {...props} />;
+const Select = ({ children, value, onValueChange }) => <div className="relative">{children}</div>;
+const SelectTrigger = ({ id, children, className }) => <button id={id} className={`flex h-10 w-full items-center justify-between rounded-md border border-gray-200 dark:border-gray-800 bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${className}`}>{children}</button>;
+const SelectValue = ({ placeholder }) => <span>{placeholder}</span>;
+const SelectContent = ({ children, className }) => <div className={`absolute z-50 min-w-[8rem] overflow-hidden rounded-md border bg-white dark:bg-gray-900 text-popover-foreground shadow-md animate-in fade-in-80 ${className}`}>{children}</div>;
+const SelectItem = ({ value, children, className }) => <div className={`relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 ${className}`}>{children}</div>;
+const Switch = ({ checked, onCheckedChange, ...props }) => <button type="button" role="switch" aria-checked={checked} onClick={() => onCheckedChange(!checked)} className={`${checked ? 'bg-gray-900 dark:bg-gray-50' : 'bg-gray-200 dark:bg-gray-800'} relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2`} {...props}><span className={`${checked ? 'translate-x-5' : 'translate-x-0'} pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}></span></button>;
+const Separator = ({ orientation = 'horizontal', className }) => <div className={`${orientation === 'horizontal' ? 'h-[1px] w-full' : 'h-full w-[1px]'} shrink-0 bg-gray-200 dark:bg-gray-800 ${className}`} />;
+
+
+// Main API client class
+class LunaAI {
+  constructor(debug = false) {
+    this.debug = debug;
+    this.proxy = "https://cors-anywhere.herokuapp.com/";
+    this.bypassUrl = "https://fgsi.koyeb.app/api/tools/bypasscf/v5";
+    this.createUrl = "https://aiarticle.erweima.ai/api/v1/secondary-page/api/create";
+    this.statusUrl = "https://aiarticle.erweima.ai/api/v1/secondary-page/api/";
+    this.sitekey = "0x4AAAAAAAdJZmNxW54o-Gvd"; 
+    this._interval = null;
+  }
+
+  cancel() {
+    if (this._interval) {
+      clearInterval(this._interval);
+      this._interval = null;
+    }
+  }
+
+  async bypassCF(url, apikey) {
+    const proxyUrl = `${this.proxy}${this.bypassUrl}`;
+    const res = await axios.get(proxyUrl, {
+      params: { apikey, url, sitekey: this.sitekey, mode: "turnstile-min" },
+      headers: { 'x-requested-with': 'XMLHttpRequest' }
+    });
+    return res?.data?.data?.token;
+  }
+
+  async createVideo(token, payload) {
+    const proxyUrl = `${this.proxy}${this.createUrl}`;
+    const headers = {
+      'verify': token,
+      'uniqueid': (typeof window !== "undefined" ? window.btoa(String(Date.now())) : "") || "",
+      'x-requested-with': 'XMLHttpRequest'
+    };
+    const res = await axios.post(proxyUrl, payload, { headers });
+    return res?.data?.data?.recordId;
+  }
+
+  async checkStatus(recordId) {
+    const proxyUrl = `${this.proxy}${this.statusUrl}${recordId}`;
+    const res = await axios.get(proxyUrl, {
+        headers: { 'x-requested-with': 'XMLHttpRequest' }
+    });
+    return res?.data?.data;
+  }
+
+  run({
+    apikey = "your apikey",
+    prompt,
+    imgUrls = [],
+    quality = "720p",
+    duration = 8,
+    autoSoundFlag = false,
+    soundPrompt = "",
+    autoSpeechFlag = false,
+    speechPrompt = "",
+    speakerId = "Auto",
+    aspectRatio = "16:9",
+    secondaryPageId = 1946,
+    channel = "VEO3",
+    source = "lunaai.video",
+    type = "features",
+    watermarkFlag = false,
+    privateFlag = false,
+    isTemp = true,
+    vipFlag = false,
+    model = "veo-3-fast",
+    onPoll,
+  }) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        const token = await this.bypassCF("https://lunaai.video/features/v3-fast", apikey);
+        if (!token) return reject(new Error("Bypass token failed. Please ensure the CORS proxy is active."));
+        this.debug && console.log("[🛡️ Bypass Success] Token:", token);
+
+        const payload = {
+          prompt, imgUrls, quality, duration, autoSoundFlag, soundPrompt,
+          autoSpeechFlag, speechPrompt, speakerId, aspectRatio, secondaryPageId,
+          channel, source, type, watermarkFlag, privateFlag, isTemp, vipFlag, model,
+        };
+
+        const recordId = await this.createVideo(token, payload);
+        if (!recordId) return reject(new Error("Failed to get a Record ID. The API may be down or the request was blocked."));
+        this.debug && console.log("[🎬 Video Requested] Record ID:", recordId);
+
+        this._interval = setInterval(async () => {
+          try {
+            const data = await this.checkStatus(recordId);
+            onPoll?.(data);
+            if (data?.state === "success" && data?.completeData) {
+              clearInterval(this._interval);
+              this._interval = null;
+              const result = JSON.parse(data.completeData);
+              this.debug && console.log("[✅ Success]");
+              resolve(result);
+            } else if (data?.failCode || data?.failMsg) {
+              clearInterval(this._interval);
+              this._interval = null;
+              reject(new Error(`[❌ Failed] ${data.failCode || ""} ${data.failMsg || ""}`));
+            }
+          } catch (err) {
+            clearInterval(this._interval);
+            this._interval = null;
+            reject(err);
+          }
+        }, 5000);
+      } catch (err) {
+        reject(err);
+      }
+    });
+  }
+}
+
+// Utility: Attempt to discover a video URL within arbitrary result JSON
+function guessVideoUrl(obj) {
+  if (!obj) return undefined;
+  
+  let finalUrl = undefined;
+
+  const candidates = [
+    obj.video_url, obj.videoUrl, 
+    obj.image_url, obj.imageUrl, 
+    obj.url, obj.downloadUrl,
+    obj?.video?.url, obj?.data?.videoUrl, obj?.data?.url,
+  ];
+  
+  for (const c of candidates) {
+    if (typeof c === "string" && c.startsWith("http")) {
+      finalUrl = c;
+      break;
+    }
+  }
+
+  if (!finalUrl) {
+      try {
+        const queue = [obj];
+        while (queue.length > 0 && !finalUrl) {
+          const cur = queue.shift();
+          if (typeof cur === 'string' && cur.startsWith('http') && (cur.includes('.mp4') || cur.includes('.jpg') || cur.includes('.png'))) {
+              finalUrl = cur;
+              break;
+          }
+          if (cur && typeof cur === 'object') {
+            for (const v of Object.values(cur)) {
+                queue.push(v);
+            }
+          }
+        }
+      } catch (e) {
+        console.error("Deep URL search failed:", e);
+      }
+  }
+
+  if (finalUrl) {
+      let modifiedUrl = finalUrl.replace(/_watermarked/g, '');
+      modifiedUrl = modifiedUrl.replace(/\.(jpg|jpeg|png|webp)(\?.*)?$/i, ".mp4");
+      return modifiedUrl;
+  }
+
+  return undefined;
+}
+
+function Field({ label, htmlFor, children, hint }) {
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={htmlFor} className="text-sm font-medium">{label}</Label>
+      {children}
+      {hint ? <p className="text-xs text-gray-500 dark:text-gray-400">{hint}</p> : null}
+    </div>
+  );
+}
+
+// New Status Display Component
+function StatusDisplay({ logs, busy, error, videoUrl }) {
+    const latestLog = logs.length > 0 ? logs[logs.length - 1] : "";
+    const statusText = latestLog.split('—')[1]?.trim() || "Menunggu untuk memulai...";
+    const progressMatch = latestLog.match(/\((\d+)%\)/);
+    const progress = progressMatch ? parseInt(progressMatch[1], 10) : 0;
+
+    let icon, colorClass, displayStatusText;
+
+    if (error) {
+        icon = <CircleX className="h-12 w-12 text-red-500" />;
+        colorClass = "bg-red-500";
+        displayStatusText = "Terjadi Kesalahan";
+    } else if (videoUrl) {
+        icon = <CircleCheck className="h-12 w-12 text-green-500" />;
+        colorClass = "bg-green-500";
+        displayStatusText = "Video Berhasil Dibuat!";
+    } else if (busy) {
+        icon = <Loader2 className="h-12 w-12 text-blue-500 animate-spin" />;
+        colorClass = "bg-blue-500";
+        displayStatusText = statusText;
+    } else {
+        icon = <Info className="h-12 w-12 text-gray-500" />;
+        colorClass = "bg-gray-500";
+        displayStatusText = logs.length > 0 ? "Dibatalkan" : "Siap untuk memulai";
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Status Proses</CardTitle>
+                <CardDescription>Perkembangan pembuatan video secara real-time</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="flex flex-col items-center text-center space-y-4 pt-4">
+                    <motion.div
+                        key={displayStatusText}
+                        initial={{ scale: 0.5, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                    >
+                        {icon}
+                    </motion.div>
+                    <p className="font-medium text-lg h-6">{displayStatusText}</p>
+                    <div className="w-full bg-gray-200 rounded-full h-3 dark:bg-gray-700 overflow-hidden">
+                        <motion.div
+                            className={`h-3 rounded-full ${colorClass} transition-colors duration-500`}
+                            initial={{ width: '0%' }}
+                            animate={{ width: `${videoUrl ? 100 : progress}%` }}
+                            transition={{ duration: 0.8, ease: "easeInOut" }}
+                        />
+                    </div>
+                    <div className="text-xs font-mono space-y-1 w-full text-left bg-gray-100 dark:bg-gray-800/50 p-3 rounded-lg h-28 overflow-auto">
+                        {logs.length > 0 ? (
+                            logs.slice(-5).map((l, i) => <div key={i} className="whitespace-pre-wrap break-all">{l}</div>)
+                        ) : (
+                            <div className="text-gray-500 dark:text-gray-400">Log akan tampil di sini…</div>
+                        )}
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+
+export default function App() {
+  const [tab, setTab] = useState("text");
+  const [apiKey, setApiKey] = useState("fgsiapi-1e3e18a6-6d");
+  const [prompt, setPrompt] = useState("A majestic lion roaring on a rocky outcrop at sunset");
+  const [imgUrlsRaw, setImgUrlsRaw] = useState("");
+  const [quality, setQuality] = useState("720p");
+  const [duration, setDuration] = useState(8);
+  const [aspect, setAspect] = useState("16:9");
+  const [model, setModel] = useState("veo-3-fast");
+  const [autoSound, setAutoSound] = useState(false);
+  const [soundPrompt, setSoundPrompt] = useState("");
+  const [autoSpeech, setAutoSpeech] = useState(false);
+  const [speechPrompt, setSpeechPrompt] = useState("");
+  const [speakerId, setSpeakerId] = useState("Auto");
+  const [watermark, setWatermark] = useState(false);
+  const [isPrivate, setIsPrivate] = useState(false);
+  const [vipFlag, setVipFlag] = useState(true);
+
+  const [busy, setBusy] = useState(false);
+  const [logs, setLogs] = useState([]);
+  const [result, setResult] = useState(null);
+  const [videoUrl, setVideoUrl] = useState("");
+  const [error, setError] = useState("");
+  const [showAdvanced, setShowAdvanced] = useState(false);
+
+  const clientRef = useRef(null);
+
+  useEffect(() => () => clientRef.current?.cancel(), []);
+
+  function pushLog(line) {
+    setLogs((prev) => [...prev, `${new Date().toLocaleTimeString()} — ${line}`].slice(-200));
+  }
+
+  const imgUrls = useMemo(
+    () => imgUrlsRaw.split(/\n|,/).map((s) => s.trim()).filter(Boolean),
+    [imgUrlsRaw]
+  );
+
+  async function handleRun() {
+    setBusy(true);
+    setError("");
+    setResult(null);
+    setVideoUrl("");
+    setLogs([]);
+
+    const app = new LunaAI(true); // Enable debug logs
+    clientRef.current = app;
+
+    try {
+      pushLog("Requesting bypass token…");
+      const res = await app.run({
+        apikey: apiKey,
+        prompt,
+        imgUrls: tab === "image" ? imgUrls : [],
+        quality,
+        duration: Number(duration) || 8,
+        autoSoundFlag: autoSound,
+        soundPrompt,
+        autoSpeechFlag: autoSpeech,
+        speechPrompt,
+        speakerId,
+        aspectRatio: aspect,
+        watermarkFlag: watermark,
+        privateFlag: isPrivate,
+        vipFlag,
+        model,
+        onPoll: (data) => {
+          if (!data) return;
+          const pct = data?.percent || data?.progress;
+          const st = data?.state || data?.status;
+          pushLog(`Status: ${st ?? "…"}${pct ? ` (${pct}%)` : ""}`);
+        },
+      });
+
+      setResult(res);
+      const url = guessVideoUrl(res);
+      if (url) {
+        setVideoUrl(url);
+        pushLog("✅ Success — video URL found.");
+      } else {
+        pushLog("⚠️ Success — video URL not auto-detected. Check raw JSON.");
+      }
+    } catch (e) {
+      console.error(e);
+      let errorMessage = e?.message || String(e);
+      if (e.isAxiosError) {
+          errorMessage = `Network request failed: ${e.message}.`;
+          if (e.response) {
+              errorMessage += ` (Status: ${e.response.status} ${e.response.statusText})`;
+          }
+      }
+      const fullError = `${errorMessage} This can be caused by two main issues: 1) The CORS proxy needs activation. Please visit cors-anywhere.herokuapp.com, request access, and try again. 2) Your API Key may be invalid or expired.`;
+      setError(fullError);
+      pushLog(`❌ Error: ${errorMessage}`);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function handleCancel() {
+    clientRef.current?.cancel();
+    setBusy(false);
+    pushLog("⏹️ Cancelled by user.");
+  }
+
+  return (
+    <div className="bg-gray-50 dark:bg-black text-gray-900 dark:text-gray-100 min-h-screen font-sans">
+      <div className="mx-auto max-w-6xl p-4 sm:p-6 space-y-6">
+        <motion.header initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">VEO 3 Studio</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Text-to-Video & Image-to-Video (LunaAI, VEO-3)</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <a href="https://fgsi.koyeb.app" target="_blank" rel="noreferrer" className="text-xs underline">fgsi.koyeb.app</a>
+            <Separator orientation="vertical" className="h-6" />
+            <a href="https://lunaai.video" target="_blank" rel="noreferrer" className="text-xs underline">lunaai.video</a>
+          </div>
+        </motion.header>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Configuration</CardTitle>
+            <CardDescription>Enter your API Key & video parameters</CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <Field label="API Key" htmlFor="api-key" hint="A valid API key is required. The default key may not work. Get one from fgsi.koyeb.app">
+                <div className="flex items-center gap-2">
+                  <Input id="api-key" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="fgsiapi-xxxxxxxx" className="font-mono" />
+                  <LinkIcon className="h-4 w-4 text-gray-400" />
+                </div>
+              </Field>
+
+              <Tabs>
+                <TabsList className="grid grid-cols-2 w-full">
+                  <TabsTrigger active={tab === 'text'} onClick={() => setTab('text')} className="gap-2"><Video className="h-4 w-4" />Text → Video</TabsTrigger>
+                  <TabsTrigger active={tab === 'image'} onClick={() => setTab('image')} className="gap-2"><ImageIcon className="h-4 w-4" />Image → Video</TabsTrigger>
+                </TabsList>
+                {tab === 'text' && (
+                  <TabsContent className="pt-4">
+                    <Field label="Prompt" htmlFor="prompt-text" hint="Describe the scene for the video">
+                      <Textarea id="prompt-text" value={prompt} onChange={(e) => setPrompt(e.target.value)} rows={5} placeholder="Cyberpunk city at night with neon rain…" />
+                    </Field>
+                  </TabsContent>
+                )}
+                {tab === 'image' && (
+                  <TabsContent className="pt-4">
+                    <div className="space-y-4">
+                      <Field label="Prompt (optional)" htmlFor="prompt-img" hint="Additional guidance for the scene">
+                        <Textarea id="prompt-img" value={prompt} onChange={(e) => setPrompt(e.target.value)} rows={3} placeholder="Pan from left to right across the skyline…" />
+                      </Field>
+                      <Field label="Image URLs" htmlFor="img-urls" hint="One URL per line. Order matters.">
+                        <Textarea id="img-urls" value={imgUrlsRaw} onChange={(e) => setImgUrlsRaw(e.target.value)} rows={5} placeholder={`https://placehold.co/600x400/000000/FFFFFF?text=Image+1\nhttps://placehold.co/600x400/FFFFFF/000000?text=Image+2`} />
+                      </Field>
+                      {!!imgUrls.length && (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                          {imgUrls.map((u, i) => (
+                            <div key={i} className="rounded-xl overflow-hidden border bg-muted/30">
+                              <img src={u} alt={`img-${i}`} className="w-full h-28 object-cover" onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/150x150/EEE/333?text=Invalid'; }} />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </TabsContent>
+                )}
+              </Tabs>
+            </div>
+
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <Field label="Quality" htmlFor="quality">
+                  <select id="quality" value={quality} onChange={e => setQuality(e.target.value)} className="flex h-10 w-full items-center justify-between rounded-md border border-gray-200 dark:border-gray-800 bg-transparent px-3 py-2 text-sm">
+                    <option value="480p">480p</option>
+                    <option value="720p">720p</option>
+                    <option value="1080p">1080p</option>
+                  </select>
+                </Field>
+                <Field label="Duration (s)" htmlFor="duration">
+                  <Input id="duration" type="number" min={2} max={60} value={duration} onChange={(e) => setDuration(e.target.value)} />
+                </Field>
+                <Field label="Aspect Ratio" htmlFor="aspect">
+                   <select id="aspect" value={aspect} onChange={e => setAspect(e.target.value)} className="flex h-10 w-full items-center justify-between rounded-md border border-gray-200 dark:border-gray-800 bg-transparent px-3 py-2 text-sm">
+                    <option value="16:9">16:9</option>
+                    <option value="9:16">9:16</option>
+                    <option value="1:1">1:1</option>
+                    <option value="4:3">4:3</option>
+                  </select>
+                </Field>
+                <Field label="Model" htmlFor="model">
+                   <select id="model" value={model} onChange={e => setModel(e.target.value)} className="flex h-10 w-full items-center justify-between rounded-md border border-gray-200 dark:border-gray-800 bg-transparent px-3 py-2 text-sm">
+                    <option value="veo-3-fast">veo-3-fast</option>
+                    <option value="veo-3">veo-3</option>
+                  </select>
+                </Field>
+              </div>
+
+              <Button variant="ghost" size="sm" onClick={() => setShowAdvanced((s) => !s)} className="gap-2 text-gray-500 dark:text-gray-400">
+                <Settings2 className="h-4 w-4" /> Advanced options
+              </Button>
+
+              {showAdvanced && (
+                <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} className="space-y-4 border-t pt-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex items-center justify-between gap-3 p-3 rounded-xl border border-gray-200 dark:border-gray-800">
+                      <div>
+                        <Label className="text-sm">Auto Sound FX</Label>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Add auto sound effects</p>
+                      </div>
+                      <Switch checked={autoSound} onCheckedChange={setAutoSound} />
+                    </div>
+                    <div className="flex items-center justify-between gap-3 p-3 rounded-xl border border-gray-200 dark:border-gray-800">
+                      <div>
+                        <Label className="text-sm">Auto Speech</Label>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Generate auto narration</p>
+                      </div>
+                      <Switch checked={autoSpeech} onCheckedChange={setAutoSpeech} />
+                    </div>
+                  </div>
+                  <Field label="Sound Prompt" htmlFor="sound-prompt">
+                    <Input id="sound-prompt" placeholder="e.g., gentle rain and distant traffic" value={soundPrompt} onChange={(e) => setSoundPrompt(e.target.value)} />
+                  </Field>
+                  <div className="grid grid-cols-2 gap-4">
+                    <Field label="Speech Prompt" htmlFor="speech-prompt">
+                      <Input id="speech-prompt" placeholder="Narration text…" value={speechPrompt} onChange={(e) => setSpeechPrompt(e.target.value)} />
+                    </Field>
+                    <Field label="Speaker ID" htmlFor="speaker-id">
+                      <Input id="speaker-id" placeholder="Auto" value={speakerId} onChange={(e) => setSpeakerId(e.target.value)} />
+                    </Field>
+                  </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="flex flex-col items-start justify-center gap-2 p-3 rounded-xl border border-gray-200 dark:border-gray-800">
+                        <Label htmlFor="watermark-switch" className="text-sm font-medium">Tambahkan Watermark</Label>
+                        <Switch id="watermark-switch" checked={watermark} onCheckedChange={setWatermark} />
+                    </div>
+                    <div className="flex flex-col items-start justify-center gap-2 p-3 rounded-xl border border-gray-200 dark:border-gray-800">
+                        <Label htmlFor="private-switch" className="text-sm font-medium">Video Pribadi</Label>
+                        <Switch id="private-switch" checked={isPrivate} onCheckedChange={setIsPrivate} />
+                    </div>
+                    <div className="flex flex-col items-start justify-center gap-2 p-3 rounded-xl border border-gray-200 dark:border-gray-800">
+                        <Label htmlFor="vip-switch" className="text-sm font-medium">Antrean VIP</Label>
+                        <Switch id="vip-switch" checked={vipFlag} onCheckedChange={setVipFlag} />
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              <div className="flex items-center gap-3 pt-2">
+                <Button onClick={handleRun} disabled={busy} className="gap-2 px-5">
+                  {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Video className="h-4 w-4" />} Generate
+                </Button>
+                <Button onClick={handleCancel} disabled={!busy} variant="secondary" className="gap-2">
+                  <CircleStop className="h-4 w-4" /> Cancel
+                </Button>
+              </div>
+              
+              <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/10 p-3 text-xs text-yellow-700 dark:text-yellow-300">
+                <p className="font-medium mb-1">Action Required: Network Proxy</p>
+                <p>
+                    This app uses a public proxy. If you see network errors, please{' '}
+                    <a href="https://cors-anywhere.herokuapp.com/" target="_blank" rel="noopener noreferrer" className="underline font-semibold">
+                        visit the proxy activation page
+                    </a>, click the button to request access, and then try generating again.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <CardTitle>Result</CardTitle>
+              <CardDescription>Video preview & metadata</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {videoUrl ? (
+                <div className="space-y-3">
+                  <video src={videoUrl} controls className="w-full rounded-2xl shadow-lg bg-black" />
+                  <div className="flex items-center gap-2">
+                    <a href={videoUrl} download target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-sm underline">
+                      <Download className="h-4 w-4" /> Download video
+                    </a>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-sm text-gray-500 dark:text-gray-400 h-60 flex items-center justify-center bg-gray-100 dark:bg-gray-800/50 rounded-2xl">
+                    {busy ? 'Generating video...' : 'Your video will appear here.'}
+                </div>
+              )}
+              {result && (
+                <div className="rounded-xl border border-gray-200 dark:border-gray-800 p-3">
+                  <div className="text-sm font-medium mb-2">Raw JSON Response</div>
+                  <pre className="text-xs whitespace-pre-wrap break-words max-h-80 overflow-auto bg-gray-100 dark:bg-gray-800/50 p-3 rounded-lg font-mono">{JSON.stringify(result, null, 2)}</pre>
+                </div>
+              )}
+              {error && (
+                <div className="rounded-xl border border-red-500/30 p-3 text-sm text-red-600 dark:text-red-400 bg-red-500/10">{error}</div>
+              )}
+            </CardContent>
+          </Card>
+
+          <StatusDisplay logs={logs} busy={busy} error={error} videoUrl={videoUrl} />
+          
+        </div>
+
+        <footer className="text-xs text-gray-500 dark:text-gray-400 text-center py-4">
+          © {new Date().getFullYear()} — VEO 3 Studio • Built with React & Tailwind. Powered by LunaAI.
+        </footer>
+      </div>
+    </div>
+  );
+}
