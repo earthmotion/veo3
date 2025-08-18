@@ -372,26 +372,26 @@
           // Fetch API key after authentication
           useEffect(() => {
             async function fetchApiKey() {
-                const proxiedApiUrl = 'https://cors-anywhere.herokuapp.com/https://earthmotion.github.io/veo3/mainvip.html';
-                const originalApiUrl = 'https://earthmotion.github.io/veo3/mainvip.html';
-                pushLog(`Fetching API key from ${originalApiUrl}...`);
+                const proxiedApiUrl = 'https://cors-anywhere.herokuapp.com/https://earthmotion.github.io/veo3/api.js';
+                const originalApiUrl = 'https://earthmotion.github.io/veo3/api.js';
+                pushLog(`Memuat Kunci API dari ${originalApiUrl}...`);
                 try {
                     setIsApiLoading(true);
                     const response = await fetch(proxiedApiUrl);
                     if (!response.ok) {
                         throw new Error(`Network response was not ok, status: ${response.status}`);
                     }
-                    const htmlContent = await response.text();
-                    const match = htmlContent.match(/(fgsiapi-[a-f0-9-]+)/);
+                    const scriptContent = await response.text();
+                    const match = scriptContent.match(/(fgsiapi-[a-f0-9-]+)/);
                     if (match && match[1]) {
                         setApiKey(match[1]);
-                        pushLog("✅ API Key loaded successfully.");
+                        pushLog("✅ Kunci API berhasil dimuat.");
                     } else {
-                        throw new Error("Could not find a valid API key in the fetched content.");
+                        throw new Error("Could not find a valid API key in the fetched script.");
                     }
                 } catch (error) {
                     console.error("Failed to fetch API key:", error);
-                    const errorMessage = `Failed to load API key. Please check your internet connection, activate the CORS proxy, and refresh. Details: ${error.message}`;
+                    const errorMessage = `Gagal memuat Kunci API. Periksa koneksi internet Anda, aktifkan proxy CORS, dan segarkan halaman. Detail: ${error.message}`;
                     setError(errorMessage);
                     pushLog(`❌ Error: ${errorMessage}`);
                 } finally {
