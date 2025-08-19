@@ -1,446 +1,465 @@
 <!DOCTYPE html>
-<html lang="id" data-bs-theme="dark">
-
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VEO 3 UNLIMITED App</title>
-
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-
-    <!-- Font Awesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" xintegrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
+    <title>Generator Video Luna AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Custom styles for a modern and professional look */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap');
-        
-        :root {
-            --background-start: #0a0a0a;
-            --background-end: #000000;
-            --surface-color: rgba(24, 24, 24, 0.8);
-            --border-color: rgba(255, 255, 255, 0.1);
-            --primary-color: #3b82f6;
-            --primary-hover: #60a5fa;
-            --text-main: #f1f5f9;
-            --text-secondary: #94a3b8;
-        }
-
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--background-end);
-            background-image: radial-gradient(circle at top, var(--background-start), var(--background-end));
-            color: var(--text-main);
-            min-height: 100vh;
+            background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
         }
-
-        h1, h3, h4, h5, .card-title {
-            font-family: 'Playfair Display', serif;
-        }
-        
-        .card {
-            background-color: var(--surface-color);
-            border: 1px solid var(--border-color);
-            border-radius: 0.75rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-            backdrop-filter: blur(20px);
-        }
-        
-        .form-control {
-            background-color: #1f1f1f;
-            border-color: #3a3a3a;
-            color: var(--text-main);
-            border-radius: 0.5rem;
-            transition: all 0.3s ease;
-        }
-        .form-control:focus {
-            background-color: #1f1f1f;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-            color: var(--text-main);
-        }
-        
-        .btn {
-            border-radius: 0.5rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-        .btn-primary {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
-        }
-        .btn-primary:hover {
-            background-color: var(--primary-hover);
-            border-color: var(--primary-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(96, 165, 250, 0.3);
-        }
-
-        #notification {
-            display: none;
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1050;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-        
-        #loadingSpinner { display: none; }
-        #result { display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: center; }
-
-        .video-wrapper {
-            flex: 1 1 45%;
-            min-width: 300px;
-            background-color: #1f1f1f;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            border: 1px solid var(--border-color);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .video-wrapper:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-        }
-        .video-wrapper video { width: 100%; border-radius: 0.25rem; background-color: #000; }
-        .video-wrapper .actions-wrapper { margin-top: 0.75rem; }
-        
-        .choice-btn { transition: all 0.2s ease-in-out; }
-        .choice-btn.active {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-            color: #fff;
-            transform: scale(1.05);
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
-        }
-
-        /* Login Overlay Styles */
-        #login-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
+        .glass-effect {
+            background: rgba(31, 41, 55, 0.7);
             backdrop-filter: blur(10px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        #app-content {
-            display: none; /* Hidden by default */
+        .form-input, .form-select {
+            background-color: #374151;
+            border-color: #4b5563;
+            color: #d1d5db;
+            transition: all 0.3s ease;
+        }
+        .form-input:focus, .form-select:focus {
+            --tw-ring-color: #3b82f6;
+            border-color: #3b82f6;
+            background-color: #4b5563;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+        }
+        .form-input::placeholder {
+            color: #9ca3af;
+        }
+        .loader {
+            border-top-color: #3498db;
+            -webkit-animation: spin 1s linear infinite;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        pre {
+            background-color: #111827;
+            padding: 12px;
+            border-radius: 8px;
+            color: #9ca3af;
+            font-size: 0.875rem;
+            line-height: 1.5rem;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            border: 1px solid #374151;
+        }
+        /* Custom Checkbox */
+        .form-checkbox {
+            appearance: none;
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            background-color: #4b5563;
+            border: 1px solid #6b7280;
+            border-radius: 6px;
+            cursor: pointer;
+            display: inline-block;
+            position: relative;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        .form-checkbox:checked {
+            background-color: #3b82f6;
+            border-color: #3b82f6;
+        }
+        .form-checkbox:checked::after {
+            content: '';
+            position: absolute;
+            left: 6px;
+            top: 2px;
+            width: 5px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 3px 3px 0;
+            transform: rotate(45deg);
         }
     </style>
 </head>
+<body class="bg-gray-900 text-gray-200 flex items-center justify-center min-h-screen p-4">
 
-<body>
-    <!-- Login Screen -->
-    <div id="login-overlay">
-        <div class="card" style="width: 22rem;">
-            <div class="card-body p-4">
-                <h4 class="card-title text-center">Login Diperlukan</h4>
-                <p class="text-body-secondary text-center small mb-4">Masukkan kata sandi untuk melanjutkan.</p>
-                <div class="mb-3">
-                    <input type="password" id="passwordInput" class="form-control" placeholder="••••••••" disabled>
-                </div>
-                <button id="loginBtn" class="btn btn-primary w-100" disabled>Masuk</button>
-                <p id="loginError" class="small mt-3 text-center" style="display: none;"></p>
+    <div class="w-full max-w-4xl mx-auto">
+        <div class="glass-effect shadow-2xl rounded-2xl p-6 md:p-8">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl md:text-4xl font-bold text-white">Generator Video Luna AI</h1>
+                <p class="text-gray-400 mt-2">Buat video .mp4 dari teks atau gambar dengan mudah.</p>
             </div>
-        </div>
-    </div>
 
-    <!-- Main Application Content -->
-    <div id="app-content">
-        <div class="container py-4">
-            <header class="text-center mb-4 pb-3 border-bottom border-secondary-subtle">
-                <h1 class="fw-bold fs-2">VEO 3 UNLIMITED</h1>
-                <p class="text-body-secondary">Karya anda tercipta melalui sentuhan kreativitas dan teknologi AI</p>
-            </header>
+            <!-- Form Input -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Kolom Kiri: Input Utama -->
+                <div class="space-y-4">
+                    <div>
+                        <label for="apikey" class="block text-sm font-medium text-gray-300 mb-1">API Key</label>
+                        <input type="text" id="apikey" class="form-input w-full rounded-lg p-2.5" placeholder="Masukkan API Key Anda" value="fgsiapi-1927467b-6d">
+                        <p class="text-xs text-gray-500 mt-1">Diperlukan untuk bypass. Dapatkan dari <a href="https://fgsi.koyeb.app" target="_blank" class="text-blue-400 hover:underline">fgsi.koyeb.app</a>.</p>
+                    </div>
+                    <div>
+                        <label for="prompt" class="block text-sm font-medium text-gray-300 mb-1">Prompt</label>
+                        <textarea id="prompt" rows="4" class="form-input w-full rounded-lg p-2.5" placeholder="Contoh: Seekor astronot mengendarai kuda di Mars"></textarea>
+                    </div>
+                    <div>
+                        <label for="image_url" class="block text-sm font-medium text-gray-300 mb-1">URL Gambar (opsional)</label>
+                        <input type="text" id="image_url" class="form-input w-full rounded-lg p-2.5" placeholder="Masukkan satu URL gambar (.jpg, .png)">
+                         <p class="text-xs text-gray-500 mt-1">Gunakan gambar sebagai dasar untuk video .mp4 Anda.</p>
+                    </div>
+                </div>
 
-            <div id="notification" class="alert alert-warning" role="alert"></div>
-
-            <div class="card">
-                <div class="card-body p-4">
-                    <div class="row g-4">
-                        <!-- Input and Configuration Column -->
-                        <div class="col-lg-6">
-                            <div class="mb-3">
-                                <label for="promptInputMain" class="form-label">Prompt</label>
-                                <textarea id="promptInputMain" class="form-control" rows="5" placeholder="A futuristic city skyline at night..."></textarea>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label class="form-label">Pilih Model VEO 3</label>
-                                <div id="modelV3Buttons" class="btn-group w-100">
-                                    <button type="button" class="btn btn-outline-secondary choice-btn" data-value="veo3-sd">SD</button>
-                                    <button type="button" class="btn btn-outline-secondary choice-btn active" data-value="veo3">HD</button>
-                                    <button type="button" class="btn btn-outline-secondary choice-btn" data-value="veo3-fhd">FHD</button>
-                                </div>
-                            </div>
-
-                            <div class="mb-4">
-                                <label class="form-label">Pilih Model VEO 3 (Cepat)</label>
-                                <div id="modelV3FastButtons" class="btn-group w-100">
-                                    <button type="button" class="btn btn-outline-secondary choice-btn" data-value="veo3-fast-sd">SD</button>
-                                    <button type="button" class="btn btn-outline-secondary choice-btn" data-value="veo3-fast">HD</button>
-                                    <button type="button" class="btn btn-outline-secondary choice-btn" data-value="veo3-fast-fhd">FHD</button>
-                                </div>
-                            </div>
-
-                            <button id="generateBtn" class="btn btn-primary w-100">
-                                <i class="fa-solid fa-play me-2"></i>Buat Video
-                            </button>
+                <!-- Kolom Kanan: Pengaturan -->
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="quality" class="block text-sm font-medium text-gray-300 mb-1">Kualitas Video</label>
+                            <select id="quality" class="form-select w-full rounded-lg p-2.5">
+                                <option>720p</option>
+                                <option>1080p</option>
+                                <option>4k</option>
+                            </select>
                         </div>
-
-                        <!-- Result Column -->
-                        <div class="col-lg-6">
-                            <h5 class="mb-3">Hasil Video</h5>
-                            <div id="loadingSpinner" class="text-center">
-                                <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
-                                    <span class="visually-hidden">Loading...</span>
-                                </div>
-                                <p id="loadingText" class="mt-2 text-body-secondary">Membuat video, mohon tunggu...</p>
-                            </div>
-                            <div id="result" class="bg-dark-subtle p-3 rounded-3" style="min-height: 250px;">
-                                 <p class="text-body-secondary m-auto">Video Anda akan muncul di sini.</p>
-                            </div>
+                        <div>
+                            <label for="duration" class="block text-sm font-medium text-gray-300 mb-1">Durasi (detik)</label>
+                            <select id="duration" class="form-select w-full rounded-lg p-2.5">
+                                <option>8</option>
+                                <option>10</option>
+                                <option>15</option>
+                                <option>20</option>
+                            </select>
                         </div>
+                    </div>
+                     <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="aspectRatio" class="block text-sm font-medium text-gray-300 mb-1">Aspek Rasio</label>
+                            <select id="aspectRatio" class="form-select w-full rounded-lg p-2.5">
+                                <option>16:9</option>
+                                <option>9:16</option>
+                                <option>1:1</option>
+                                <option>4:3</option>
+                            </select>
+                        </div>
+                         <div>
+                            <label for="model" class="block text-sm font-medium text-gray-300 mb-1">Model AI</label>
+                            <select id="model" class="form-select w-full rounded-lg p-2.5">
+                                <option value="veo-3-fast">Veo 3 (Cepat)</option>
+                                <option value="veo-3">Veo 3 (Standar)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="pt-2 space-y-3">
+                         <label class="flex items-center space-x-3 cursor-pointer">
+                            <input type="checkbox" id="autoSoundFlag" class="form-checkbox">
+                            <span class="text-gray-300">Musik Latar Otomatis</span>
+                        </label>
+                        <label class="flex items-center space-x-3 cursor-pointer">
+                            <input type="checkbox" id="watermarkFlag" class="form-checkbox">
+                            <span class="text-gray-300">Sertakan Watermark</span>
+                        </label>
                     </div>
                 </div>
             </div>
 
-            <footer class="text-center text-body-secondary small py-4 mt-4">
-                © 2024 — VEO 3 Studio • Ditenagai oleh Arif Kurniawan.
-            </footer>
+            <!-- Tombol Generate -->
+            <div class="mt-8 text-center">
+                <button id="generateBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full transition-all duration-300 w-full md:w-auto inline-flex items-center justify-center transform hover:scale-105 shadow-lg hover:shadow-blue-500/50">
+                    <span id="btn-text">Buat Video .mp4</span>
+                    <div id="btn-loader" class="hidden loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-6 w-6 ml-3"></div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Area Hasil dan Log -->
+        <div id="result-container" class="mt-8 glass-effect shadow-2xl rounded-2xl p-6 md:p-8 hidden">
+            <h2 class="text-2xl font-bold text-white mb-4 text-center">Hasil Video Anda</h2>
+            <div id="video-wrapper" class="mb-6 hidden">
+                <video id="resultVideo" class="w-full max-w-2xl mx-auto rounded-lg border-2 border-gray-700" controls>
+                    Browser Anda tidak mendukung tag video.
+                </video>
+                <div class="text-center mt-4">
+                    <a id="downloadBtn" href="#" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-full transition-all duration-300 inline-flex items-center transform hover:scale-105 shadow-lg hover:shadow-green-500/50" download="video_generasi_luna.mp4">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        Unduh Video (.mp4)
+                    </a>
+                </div>
+            </div>
+            <div id="log-container" class="bg-gray-900/50 rounded-lg p-4 max-h-60 overflow-y-auto border border-gray-700">
+                <p class="font-mono text-sm text-gray-400" id="log-output">Menunggu untuk memulai...</p>
+            </div>
         </div>
     </div>
 
-    <!-- Bootstrap 5 JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<script>
+/*** *** ᠁᠁᠁᠁᠁᠁᠁᠁᠁᠁᠁᠁᠁ *** - Dev: FongsiDev *** - Contact: t.me/dashmodz *** - Gmail: fongsiapi@gmail.com & fgsidev@neko2.net *** - Group: chat.whatsapp.com/Ke94ex9fNLjE2h8QzhvEiy *** - Telegram Group: t.me/fongsidev *** - Github: github.com/Fgsi-APIs/RestAPIs/issues/new *** - Website: fgsi.koyeb.app *** ᠁᠁᠁᠁᠁᠁᠁᠁᠁᠁᠁᠁᠁ ***/// Scraper By Fgsi
 
-    <!-- Application Logic -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // --- Login Elements ---
-            const loginOverlay = document.getElementById('login-overlay');
-            const appContent = document.getElementById('app-content');
-            const passwordInput = document.getElementById('passwordInput');
-            const loginBtn = document.getElementById('loginBtn');
-            const loginError = document.getElementById('loginError');
+class LunaAI {
+  constructor(logCallback = () => {}) {
+    this.log = logCallback;
+    this.bypassUrl = "https://fgsi.koyeb.app/api/tools/bypasscf/v5";
+    this.createUrl = "https://aiarticle.erweima.ai/api/v1/secondary-page/api/create";
+    this.statusUrl = "https://aiarticle.erweima.ai/api/v1/secondary-page/api/";
+    this.referer = "https://lunaai.video/";
+    this.origin = "https://lunaai.video";
+    this.sitekey = "0x4AAAAAAAdJZmNxW54o-Gvd";
+  }
 
-            // --- App Elements ---
-            const modelV3Buttons = document.getElementById('modelV3Buttons');
-            const modelV3FastButtons = document.getElementById('modelV3FastButtons');
-            const notificationDiv = document.getElementById('notification');
-            const generateBtn = document.getElementById('generateBtn');
-            const spinner = document.getElementById('loadingSpinner');
-            const resultDiv = document.getElementById('result');
-            const loadingText = document.getElementById('loadingText');
-            const promptInputMain = document.getElementById('promptInputMain');
+  async fetchWithTimeout(resource, options = {}, timeout = 20000) {
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), timeout);
+      const response = await fetch(resource, {
+          ...options,
+          signal: controller.signal  
+      });
+      clearTimeout(id);
+      return response;
+  }
 
-            // --- State ---
-            let correctPassword = null;
-            let selectedModel = 'veo3';
-            let progressInterval = null;
-            let isGenerating = false;
+  async bypassCF(url, apikey) {
+    const fullUrl = `${this.bypassUrl}?apikey=${encodeURIComponent(apikey)}&url=${encodeURIComponent(url)}&sitekey=${this.sitekey}&mode=turnstile-min`;
+    const res = await this.fetchWithTimeout(fullUrl, {
+        headers: { accept: "application/json" },
+    });
+    if (!res.ok) throw new Error(`Bypass request failed with status ${res.status}`);
+    const json = await res.json();
+    return json?.data?.token;
+  }
 
-            // --- Security Logic ---
-            const verifyDomain = () => {
-                // Domain yang diizinkan untuk menjalankan skrip ini.
-                const allowedDomains = [
-                    'https://earthmotion.github.io/veo3/1.html', // Domain resmi untuk Gemini
-                    'localhost' // Diizinkan untuk pengujian lokal
-                ];
-                const currentHostname = window.location.hostname;
-
-                if (!allowedDomains.includes(currentHostname)) {
-                    console.error("Security Alert: Script is running on an unauthorized domain.", currentHostname);
-                    loginOverlay.innerHTML = `
-                        <div class="card" style="width: 22rem;">
-                            <div class="card-body p-4 text-center">
-                                <h4 class="card-title text-danger">Akses Ditolak</h4>
-                                <p class="text-body-secondary small mb-0">Skrip ini tidak diizinkan untuk berjalan di domain ini.</p>
-                            </div>
-                        </div>`;
-                    return false; // Domain tidak valid
-                }
-                return true; // Domain valid
-            };
-
-            // --- Login Logic ---
-            const fetchPassword = async () => {
-                try {
-                    const response = await fetch('https://rafaprojectv2.github.io/zzz/ssdwd2qsds232er.txt');
-                    if (!response.ok) {
-                        throw new Error(`Gagal mengambil data: Status ${response.status}`);
-                    }
-                    correctPassword = (await response.text()).trim();
-                    loginBtn.disabled = false;
-                    passwordInput.disabled = false;
-                    loginError.style.display = 'none';
-                } catch (error) {
-                    console.error("Error fetching password:", error);
-                    loginError.className = 'text-danger small mt-3 text-center';
-                    loginError.textContent = "Error: Gagal memuat verifikasi. Aplikasi tidak dapat digunakan.";
-                    loginError.style.display = 'block';
-                }
-            };
-            
-            const verifyLogin = () => {
-                if (passwordInput.value === correctPassword) {
-                    loginOverlay.style.display = 'none';
-                    appContent.style.display = 'block';
-                } else {
-                    loginError.className = 'text-danger small mt-3 text-center';
-                    loginError.textContent = "Kata sandi salah.";
-                    loginError.style.display = 'block';
-                }
-            };
-
-            loginBtn.addEventListener('click', verifyLogin);
-            passwordInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') verifyLogin();
-            });
-
-            // --- Main App Logic ---
-            const handleModelClick = (e) => {
-                if (e.target && e.target.classList.contains('choice-btn')) {
-                    document.querySelectorAll('.choice-btn').forEach(btn => btn.classList.remove('active'));
-                    e.target.classList.add('active');
-                    selectedModel = e.target.dataset.value;
-                }
-            };
-
-            const showNotification = (message, type = 'warning') => {
-                notificationDiv.className = `alert alert-${type}`;
-                notificationDiv.textContent = message;
-                notificationDiv.style.display = 'block';
-                setTimeout(() => { notificationDiv.style.display = 'none'; }, 5000);
-            };
-
-            const toggleGeneratingState = (generating) => {
-                isGenerating = generating;
-                generateBtn.disabled = generating;
-                spinner.style.display = generating ? 'block' : 'none';
-                resultDiv.style.display = generating ? 'none' : 'flex';
-            };
-
-            const startProgressIndicator = () => {
-                let percentage = 0;
-                clearInterval(progressInterval);
-                progressInterval = setInterval(() => {
-                    percentage = Math.min(99, percentage + Math.floor(Math.random() * 3) + 1);
-                    loadingText.textContent = `Membuat video, mohon tunggu... (${percentage}%)`;
-                }, 400);
-            };
-            
-            const stopProgressIndicator = () => {
-                 clearInterval(progressInterval);
-                 loadingText.textContent = 'Membuat video, mohon tunggu...';
-            };
-
-            const handleApiResponse = async (response) => {
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    if (response.status >= 500) {
-                         throw new Error(`Server API (${response.status}) sedang bermasalah. Coba lagi nanti.`);
-                    }
-                    throw new Error(`API Error (${response.status}): ${errorText.substring(0, 200)}`);
-                }
-                const contentType = response.headers.get("content-type");
-                if (contentType && contentType.includes("application/json")) {
-                    return response.json();
-                }
-                const responseText = await response.text();
-                throw new Error(`API mengembalikan format yang tidak terduga. Respon: ${responseText.substring(0, 200)}`);
-            };
-
-            const callApiGenerate = async (finalPrompt) => {
-                toggleGeneratingState(true);
-                startProgressIndicator();
-                resultDiv.innerHTML = '';
-
-                const apiKey = 'MELvQtx7BG';
-                const baseApiUrl = `https://api.ibeng.my.id/api/ai/${selectedModel}?query=${encodeURIComponent(finalPrompt)}&apikey=${apiKey}`;
-                
-                const promises = [
-                    fetch(baseApiUrl).then(handleApiResponse),
-                    fetch(baseApiUrl).then(handleApiResponse)
-                ];
-
-                try {
-                    const results = await Promise.allSettled(promises);
-                    
-                    results.forEach((result, index) => {
-                        const videoWrapper = document.createElement('div');
-                        videoWrapper.className = 'video-wrapper';
-                        
-                        const title = document.createElement('h4');
-                        title.textContent = `Hasil Video ${index + 1}`;
-                        videoWrapper.appendChild(title);
-
-                        if (result.status === 'fulfilled' && result.value?.data?.data?.video_url) {
-                            const video = document.createElement('video');
-                            video.src = result.value.data.data.video_url;
-                            video.controls = true;
-                            video.loop = true;
-                            video.autoplay = true;
-                            video.muted = true;
-                            video.style.objectFit = 'contain';
-                            
-                            const actionsWrapper = document.createElement('div');
-                            actionsWrapper.className = 'actions-wrapper';
-
-                            const downloadBtn = document.createElement('button');
-                            downloadBtn.className = 'btn btn-sm btn-outline-secondary';
-                            downloadBtn.innerHTML = '<i class="fa-solid fa-download me-2"></i>Download';
-                            downloadBtn.onclick = () => downloadVideo(video.src, `video_hasil_${index + 1}.mp4`);
-
-                            actionsWrapper.appendChild(downloadBtn);
-                            videoWrapper.appendChild(video);
-                            videoWrapper.appendChild(actionsWrapper);
-                        } else {
-                            const errorMessage = result.reason?.message || 'Gagal memuat video.';
-                            const errorP = document.createElement('p');
-                            errorP.className = 'text-danger';
-                            errorP.textContent = `Error: ${errorMessage}`;
-                            videoWrapper.appendChild(errorP);
-                        }
-                        resultDiv.appendChild(videoWrapper);
-                    });
-                } catch (err) {
-                    resultDiv.innerHTML = `<p class="text-danger m-auto">Terjadi kesalahan: ${err.message}</p>`;
-                } finally {
-                    stopProgressIndicator();
-                    toggleGeneratingState(false);
-                }
-            };
-            
-            const generateMedia = () => {
-                if (isGenerating) return;
-                const prompt = promptInputMain.value.trim();
-                if (!prompt) {
-                    showNotification('Silakan masukkan prompt.', 'danger');
-                    return;
-                }
-                callApiGenerate(prompt);
-            };
-
-            // --- Initializer ---
-            const initialize = () => {
-                if (verifyDomain()) {
-                    fetchPassword();
-                }
-                modelV3Buttons.addEventListener('click', handleModelClick);
-                modelV3FastButtons.addEventListener('click', handleModelClick);
-                generateBtn.addEventListener('click', generateMedia);
-            };
-
-            initialize();
+  async createVideo(token, payload) {
+    const headers = {
+      'Content-Type': 'application/json',
+      authority: "aiarticle.erweima.ai",
+      "accept-language": "ms-MY,ms;q=0.9,en-US;q=0.8,en;q=0.7",
+      origin: this.origin,
+      referer: this.referer,
+      "sec-ch-ua": '"Not A(Brand";v="8", "Chromium";v="132"',
+      "sec-ch-ua-mobile": "?1",
+      "sec-ch-ua-platform": '"Android"',
+      "sec-fetch-dest": "empty",
+      "sec-fetch-mode": "cors",
+      "sec-fetch-site": "cross-site",
+      "user-agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Mobile Safari/537.36",
+      verify: token,
+      uniqueid: btoa(Date.now()),
+    };
+    
+    try {
+        const res = await this.fetchWithTimeout(this.createUrl, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(payload)
         });
-    </script>
+
+        const responseText = await res.text();
+        this.log(`[🔍 API Create Response] Status: ${res.status}, Body: ${responseText}`);
+
+        if (!res.ok) {
+            throw new Error(`Create video request failed with status ${res.status}`);
+        }
+
+        const json = JSON.parse(responseText);
+
+        if (json.code !== 0 && json.code !== 200) {
+            throw new Error(`API Error: ${json.msg || json.message || 'Unknown API error'}`);
+        }
+
+        return json?.data?.recordId;
+    } catch (error) {
+        this.log(`[❌ Error in createVideo] ${error.message}`);
+        throw error;
+    }
+  }
+
+  async checkStatus(recordId) {
+    const res = await this.fetchWithTimeout(this.statusUrl + recordId, {
+      headers: {
+        authority: "aiarticle.erweima.ai",
+        accept: "application/json, text/plain, */*",
+        "accept-language": "ms-MY,ms;q=0.9,en-US;q=0.8,en;q=0.7",
+        origin: this.origin,
+        referer: this.referer,
+        "sec-ch-ua": '"Not A(Brand";v="8", "Chromium";v="132"',
+        "sec-ch-ua-mobile": "?1",
+        "sec-ch-ua-platform": '"Android"',
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "cross-site",
+        "user-agent": "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Mobile Safari/537.36",
+      },
+    });
+    if (!res.ok) throw new Error(`Check status request failed with status ${res.status}`);
+    const json = await res.json();
+    return json?.data;
+  }
+
+  run({
+    apikey = "your apikey",
+    prompt,
+    image_url = "",
+    quality = "720p",
+    duration = 8,
+    autoSoundFlag = false,
+    soundPrompt = "",
+    autoSpeechFlag = false,
+    speechPrompt = "",
+    speakerId = "Auto",
+    aspectRatio = "16:9",
+    secondaryPageId = 1946,
+    channel = "VEO3",
+    source = "lunaai.video",
+    type = "features",
+    watermarkFlag = false,
+    privateFlag = false,
+    isTemp = true,
+    vipFlag = false,
+    model = "veo-3-fast",
+  }) {
+    return new Promise(async (resolve, reject) => {
+      try {
+        this.log("🚀 Memulai proses pembuatan video .mp4...");
+        const token = await this.bypassCF(
+          "https://lunaai.video/features/v3-fast",
+          apikey
+        );
+        if (!token) return reject(new Error("Gagal mendapatkan token bypass. Periksa API Key Anda."));
+        this.log(`[🛡️ Bypass Berhasil] Token diterima.`);
+
+        const payload = {
+          prompt, 
+          image_url, 
+          imgUrls: image_url ? [image_url] : [], // Tetap kirim imgUrls untuk kompatibilitas jika API memerlukannya
+          quality, duration, autoSoundFlag, soundPrompt, autoSpeechFlag,
+          speechPrompt, speakerId, aspectRatio, secondaryPageId, channel, source, type,
+          watermarkFlag, privateFlag, isTemp, vipFlag, model,
+        };
+        const recordId = await this.createVideo(token, payload);
+        if (!recordId) return reject(new Error("Gagal mendapatkan Record ID dari respons API."));
+        this.log(`[🎬 Video Diminta] Record ID: ${recordId}`);
+        this.log("[⌛ Memproses video... Mohon tunggu, ini bisa memakan waktu beberapa menit.]");
+
+        const interval = setInterval(async () => {
+          try {
+            const data = await this.checkStatus(recordId);
+            if (data.state === "success" && data.completeData) {
+              clearInterval(interval);
+              try {
+                const result = JSON.parse(data.completeData);
+                this.log('[✅ Sukses] Video .mp4 berhasil dibuat!');
+                this.log(`<pre>[📦 Data Hasil]:\n${JSON.stringify(result, null, 2)}</pre>`);
+                resolve(result);
+              } catch (e) {
+                  this.log(`[❌ Error] Gagal mem-parsing data hasil: ${e.message}`);
+                  this.log(`[📦 Data Mentah]: ${data.completeData}`);
+                  reject(new Error("Gagal mem-parsing data hasil."));
+              }
+            } else if (data.failCode || data.failMsg) {
+              clearInterval(interval);
+              reject(new Error(`[❌ Gagal] ${data.failCode} ${data.failMsg}`));
+            } else {
+              this.log(`[⌛ Status: ${data.state || 'processing'}...]`);
+            }
+          } catch (err) {
+            clearInterval(interval);
+            reject(err);
+          }
+        }, 5000);
+      } catch (err)
+        {
+        reject(err);
+      }
+    });
+  }
+}
+
+// --- Logika UI ---
+document.addEventListener('DOMContentLoaded', () => {
+    const generateBtn = document.getElementById('generateBtn');
+    const btnText = document.getElementById('btn-text');
+    const btnLoader = document.getElementById('btn-loader');
+    const resultContainer = document.getElementById('result-container');
+    const logOutput = document.getElementById('log-output');
+    const videoWrapper = document.getElementById('video-wrapper');
+    const resultVideo = document.getElementById('resultVideo');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    let logHistory = [];
+
+    function updateLog(message) {
+        console.log(message);
+        logHistory.push(message);
+        logOutput.innerHTML = logHistory.join('<br>');
+        logOutput.parentElement.scrollTop = logOutput.parentElement.scrollHeight;
+    }
+    
+    function toggleButtonState(isLoading) {
+        if (isLoading) {
+            generateBtn.disabled = true;
+            btnText.classList.add('hidden');
+            btnLoader.classList.remove('hidden');
+        } else {
+            generateBtn.disabled = false;
+            btnText.classList.remove('hidden');
+            btnLoader.classList.add('hidden');
+        }
+    }
+
+    generateBtn.addEventListener('click', () => {
+        logHistory = [];
+        updateLog('Menginisialisasi...');
+        resultContainer.classList.remove('hidden');
+        videoWrapper.classList.add('hidden'); 
+        toggleButtonState(true);
+
+        const apikey = document.getElementById('apikey').value.trim();
+        const prompt = document.getElementById('prompt').value.trim();
+        const imageUrl = document.getElementById('image_url').value.trim();
+        
+        if (!apikey || !prompt) {
+            updateLog('[❌ Error] API Key dan Prompt tidak boleh kosong.');
+            toggleButtonState(false);
+            return;
+        }
+
+        const options = {
+            apikey: apikey,
+            prompt: prompt,
+            image_url: imageUrl,
+            quality: document.getElementById('quality').value,
+            duration: parseInt(document.getElementById('duration').value, 10),
+            aspectRatio: document.getElementById('aspectRatio').value,
+            model: document.getElementById('model').value,
+            autoSoundFlag: document.getElementById('autoSoundFlag').checked,
+            watermarkFlag: document.getElementById('watermarkFlag').checked,
+        };
+        
+        const app = new LunaAI(updateLog);
+
+        app.run(options)
+            .then(result => {
+                console.log("[📦 Hasil Akhir]", result);
+                const videoUrl = result?.videoUrl || result?.video_url;
+
+                if (result && videoUrl) {
+                    resultVideo.src = videoUrl;
+                    downloadBtn.href = videoUrl;
+                    videoWrapper.classList.remove('hidden');
+                    resultVideo.load();
+                } else {
+                    updateLog("[❌ Error] URL video .mp4 tidak ditemukan di hasil. Silakan periksa log 'Data Hasil' di atas untuk melihat struktur data yang diterima.");
+                }
+                toggleButtonState(false);
+            })
+            .catch(err => {
+                console.error("[🚨 Error]", err);
+                updateLog(`[🚨 Error] ${err.message}`);
+                toggleButtonState(false);
+            });
+    });
+});
+
+</script>
 </body>
 </html>
