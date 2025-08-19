@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VEO 3 UNLIMITED V1</title>
+    <title>VEO 3 UNLIMITED App</title>
 
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
@@ -17,20 +17,20 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap');
         
         :root {
-            --background-start: #0a0a0a;
-            --background-end: #000000;
-            --surface-color: rgba(24, 24, 24, 0.8);
+            --background-start: #111827;
+            --background-end: #0c0c0d;
+            --surface-color: rgba(28, 28, 31, 0.75);
             --border-color: rgba(255, 255, 255, 0.1);
             --primary-color: #3b82f6;
             --primary-hover: #60a5fa;
-            --text-main: #f1f5f9;
+            --text-main: #f8fafc;
             --text-secondary: #94a3b8;
         }
 
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--background-end);
-            background-image: radial-gradient(circle at top, var(--background-start), var(--background-end));
+            background-image: linear-gradient(180deg, var(--background-start) 0%, var(--background-end) 100%);
             color: var(--text-main);
             min-height: 100vh;
         }
@@ -42,22 +42,22 @@
         .card {
             background-color: var(--surface-color);
             border: 1px solid var(--border-color);
-            border-radius: 0.75rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-            backdrop-filter: blur(20px);
+            border-radius: 1rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(24px) saturate(180%);
         }
         
-        .form-control {
-            background-color: #1f1f1f;
-            border-color: #3a3a3a;
+        .form-control, .form-select {
+            background-color: rgba(31, 41, 55, 0.5);
+            border-color: #374151;
             color: var(--text-main);
             border-radius: 0.5rem;
             transition: all 0.3s ease;
         }
-        .form-control:focus {
-            background-color: #1f1f1f;
+        .form-control:focus, .form-select:focus {
+            background-color: rgba(31, 41, 55, 0.8);
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
             color: var(--text-main);
         }
         
@@ -65,17 +65,16 @@
             border-radius: 0.5rem;
             font-weight: 600;
             transition: all 0.3s ease;
+            padding: 0.75rem 1.5rem;
         }
         .btn-primary {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
+            background: linear-gradient(95deg, #3b82f6, #60a5fa);
+            border: none;
             box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
         }
         .btn-primary:hover {
-            background-color: var(--primary-hover);
-            border-color: var(--primary-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(96, 165, 250, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(96, 165, 250, 0.3);
         }
 
         #notification {
@@ -94,17 +93,17 @@
         .video-wrapper {
             flex: 1 1 45%;
             min-width: 300px;
-            background-color: #1f1f1f;
+            background-color: #1f2937;
             padding: 1rem;
-            border-radius: 0.5rem;
+            border-radius: 0.75rem;
             border: 1px solid var(--border-color);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
         .video-wrapper:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
         }
-        .video-wrapper video { width: 100%; border-radius: 0.25rem; background-color: #000; }
+        .video-wrapper video { width: 100%; border-radius: 0.5rem; background-color: #000; }
         .video-wrapper .actions-wrapper { margin-top: 0.75rem; }
         
         .choice-btn { transition: all 0.2s ease-in-out; }
@@ -132,6 +131,38 @@
         }
         #app-content {
             display: none; /* Hidden by default */
+        }
+
+        /* Circular Progress Bar Styles */
+        .progress-circle-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 1rem auto;
+        }
+        .progress-circle-svg {
+            transform: rotate(-90deg);
+        }
+        .progress-circle-bg {
+            fill: none;
+            stroke: #374151;
+            stroke-width: 10;
+        }
+        .progress-circle-fg {
+            fill: none;
+            stroke: url(#progressGradient);
+            stroke-width: 10;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.3s ease;
+        }
+        .progress-circle-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-main);
         }
     </style>
 </head>
@@ -172,37 +203,40 @@
                                 <textarea id="promptInputMain" class="form-control" rows="5" placeholder="A futuristic city skyline at night..."></textarea>
                             </div>
                             
-                            <div class="mb-3">
-                                <label class="form-label">Pilih Model VEO 3</label>
-                                <div id="modelV3Buttons" class="btn-group w-100">
-                                    <button type="button" class="btn btn-outline-secondary choice-btn" data-value="veo3-sd">SD</button>
-                                    <button type="button" class="btn btn-outline-secondary choice-btn active" data-value="veo3">HD</button>
-                                    <button type="button" class="btn btn-outline-secondary choice-btn" data-value="veo3-fhd">FHD</button>
-                                </div>
-                            </div>
-
                             <div class="mb-4">
-                                <label class="form-label">Pilih Model VEO 3 (Cepat)</label>
-                                <div id="modelV3FastButtons" class="btn-group w-100">
-                                    <button type="button" class="btn btn-outline-secondary choice-btn" data-value="veo3-fast-sd">SD</button>
-                                    <button type="button" class="btn btn-outline-secondary choice-btn" data-value="veo3-fast">HD</button>
-                                    <button type="button" class="btn btn-outline-secondary choice-btn" data-value="veo3-fast-fhd">FHD</button>
+                                <label class="form-label">Pilih Kualitas Model</label>
+                                <div id="modelSelection" class="btn-group w-100">
+                                    <button type="button" class="btn btn-outline-secondary choice-btn active" data-value="veo3">HD</button>
+                                    <button type="button" class="btn btn-outline-secondary choice-btn" data-value="veo3-fast">HD (Cepat)</button>
                                 </div>
                             </div>
 
-                            <button id="generateBtn" class="btn btn-primary w-100">
-                                <i class="fa-solid fa-play me-2"></i>Buat Video
-                            </button>
+                            <div class="d-grid">
+                                <button id="generateBtn" class="btn btn-primary">
+                                    <i class="fa-solid fa-play me-2"></i>Buat Video
+                                </button>
+                            </div>
                         </div>
 
                         <!-- Result Column -->
                         <div class="col-lg-6">
                             <h5 class="mb-3">Hasil Video</h5>
                             <div id="loadingSpinner" class="text-center">
-                                <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
-                                    <span class="visually-hidden">Loading...</span>
+                                <!-- New Circular Progress Bar HTML -->
+                                <p id="loadingText" class="mb-2 text-body-secondary">Membuat video, mohon tunggu...</p>
+                                <div class="progress-circle-container">
+                                    <svg class="progress-circle-svg" width="120" height="120" viewBox="0 0 120 120">
+                                        <defs>
+                                            <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                                <stop offset="0%" style="stop-color:#60a5fa;stop-opacity:1" />
+                                                <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:1" />
+                                            </linearGradient>
+                                        </defs>
+                                        <circle class="progress-circle-bg" cx="60" cy="60" r="50"></circle>
+                                        <circle id="progressCircle" class="progress-circle-fg" cx="60" cy="60" r="50"></circle>
+                                    </svg>
+                                    <div id="progressText" class="progress-circle-text">0%</div>
                                 </div>
-                                <p id="loadingText" class="mt-2 text-body-secondary">Membuat video, mohon tunggu...</p>
                             </div>
                             <div id="result" class="bg-dark-subtle p-3 rounded-3" style="min-height: 250px;">
                                  <p class="text-body-secondary m-auto">Video Anda akan muncul di sini.</p>
@@ -220,6 +254,9 @@
 
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    
+    <!-- GSAP Animation Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 
     <!-- Application Logic -->
     <script>
@@ -232,21 +269,28 @@
             const loginError = document.getElementById('loginError');
 
             // --- App Elements ---
-            const modelV3Buttons = document.getElementById('modelV3Buttons');
-            const modelV3FastButtons = document.getElementById('modelV3FastButtons');
+            const modelSelection = document.getElementById('modelSelection');
             const notificationDiv = document.getElementById('notification');
             const generateBtn = document.getElementById('generateBtn');
             const spinner = document.getElementById('loadingSpinner');
             const resultDiv = document.getElementById('result');
             const loadingText = document.getElementById('loadingText');
             const promptInputMain = document.getElementById('promptInputMain');
+            const progressCircle = document.getElementById('progressCircle');
+            const progressText = document.getElementById('progressText');
 
-            // --- State ---
+            // --- State & Config ---
             let correctPassword = null;
             let apiBaseUrl = null;
+            let apiKey = null;
             let selectedModel = 'veo3';
-            let progressInterval = null;
             let isGenerating = false;
+            let progress = { value: 0 }; // GSAP target object
+            const circleRadius = progressCircle.r.baseVal.value;
+            const circumference = 2 * Math.PI * circleRadius;
+            progressCircle.style.strokeDasharray = circumference;
+            progressCircle.style.strokeDashoffset = circumference;
+
 
             // --- Config & Login Logic ---
             const setupAppConfig = () => {
@@ -260,25 +304,32 @@
                 const getConfig = (type) => {
                     const data = {
                         pass: [
-                            {i:12,v:"ss"},{i:15,v:"sds"},{i:19,v:"xt"},{i:11,v:"zz/"},{i:17,v:"er"},{i:1,v:"ttps"},{i:7,v:".gi"},{i:2,v:"://"},{i:13,v:"dw"},{i:14,v:"d2q"},{i:18,v:".t"},{i:8,v:"thub"},{i:16,v:"232"},{i:6,v:"tv2"},{i:0,v:"h"},{i:5,v:"ojec"},{i:9,v:".io"},{i:10,v:"/z"},{i:3,v:"ra"},{i:4,v:"fapr"}
+                            {i:12,v:"zz/"},{i:1,v:"ttps"},{i:19,v:"txt"},{i:15,v:"2qs"},{i:17,v:"2er"},{i:5,v:"ject"},{i:11,v:"/z"},{i:9,v:"hub"},{i:3,v:"rafa"},{i:7,v:"."},{i:14,v:"dwd"},{i:2,v:"://"},{i:4,v:"pro"},{i:18,v:"."},{i:10,v:".io"},{i:0,v:"h"},{i:8,v:"git"},{i:16,v:"ds23"},{i:13,v:"ss"},{i:6,v:"v2"}
                         ],
                         api: [
-                            {i:14,v:"wdq"},{i:1,v:"ttps"},{i:18,v:"f."},{i:19,v:"txt"},{i:11,v:"zz/"},{i:17,v:"fee"},{i:13,v:"wd"},{i:7,v:".gi"},{i:2,v:"://"},{i:15,v:"dee"},{i:12,v:"sd"},{i:8,v:"thub"},{i:16,v:"wde"},{i:6,v:"tv2"},{i:0,v:"h"},{i:5,v:"ojec"},{i:9,v:".io"},{i:10,v:"/z"},{i:3,v:"ra"},{i:4,v:"fapr"}
+                            {i:12,v:"zz/"},{i:1,v:"ttps"},{i:19,v:"txt"},{i:15,v:"qde"},{i:17,v:"efe"},{i:5,v:"ject"},{i:11,v:"/z"},{i:9,v:"hub"},{i:3,v:"rafa"},{i:7,v:"."},{i:14,v:"dwd"},{i:2,v:"://"},{i:4,v:"pro"},{i:18,v:"ef."},{i:10,v:".io"},{i:0,v:"h"},{i:8,v:"git"},{i:16,v:"ewd"},{i:13,v:"sdw"},{i:6,v:"v2"}
+                        ],
+                        key: [
+                            {i:12,v:"zz/"},{i:1,v:"ttps"},{i:19,v:"txt"},{i:15,v:"dw"},{i:17,v:"kk"},{i:5,v:"ject"},{i:11,v:"/z"},{i:9,v:"hub"},{i:3,v:"rafa"},{i:7,v:"."},{i:14,v:"wd"},{i:2,v:"://"},{i:4,v:"pro"},{i:18,v:"mm."},{i:10,v:".io"},{i:0,v:"h"},{i:8,v:"git"},{i:16,v:"dwd"},{i:13,v:"wd"},{i:6,v:"v2"}
                         ]
                     };
+                    if (data[type].length !== 20) { console.error("Config data tampered!"); return ""; }
                     return data[type].sort((a, b) => a.i - b.i).map(item => item.v).join('');
                 };
 
                 const passwordUrl = getConfig('pass');
                 const apiUrl = getConfig('api');
+                const apiKeyUrl = getConfig('key');
 
                 Promise.all([
                     fetch(passwordUrl).then(res => res.ok ? res.text() : Promise.reject(`Gagal memuat kata sandi: ${res.status}`)),
-                    fetch(apiUrl).then(res => res.ok ? res.text() : Promise.reject(`Gagal memuat URL API: ${res.status}`))
+                    fetch(apiUrl).then(res => res.ok ? res.text() : Promise.reject(`Gagal memuat URL API: ${res.status}`)),
+                    fetch(apiKeyUrl).then(res => res.ok ? res.text() : Promise.reject(`Gagal memuat kunci API: ${res.status}`))
                 ])
-                .then(([passwordText, apiUrlText]) => {
+                .then(([passwordText, apiUrlText, apiKeyText]) => {
                     correctPassword = passwordText.trim();
                     apiBaseUrl = apiUrlText.trim();
+                    apiKey = apiKeyText.trim();
 
                     if (apiBaseUrl && !apiBaseUrl.endsWith('/')) {
                         apiBaseUrl += '/';
@@ -315,10 +366,11 @@
 
             // --- Main App Logic ---
             const handleModelClick = (e) => {
-                if (e.target && e.target.classList.contains('choice-btn')) {
-                    document.querySelectorAll('.choice-btn').forEach(btn => btn.classList.remove('active'));
-                    e.target.classList.add('active');
-                    selectedModel = e.target.dataset.value;
+                const button = e.target.closest('.choice-btn');
+                if (button) {
+                    document.querySelectorAll('#modelSelection .choice-btn').forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    selectedModel = button.dataset.value;
                 }
             };
 
@@ -337,17 +389,36 @@
             };
 
             const startProgressIndicator = () => {
-                let percentage = 0;
-                clearInterval(progressInterval);
-                progressInterval = setInterval(() => {
-                    percentage = Math.min(99, percentage + Math.floor(Math.random() * 3) + 1);
-                    loadingText.textContent = `Membuat video, mohon tunggu... (${percentage}%)`;
-                }, 400);
+                progress.value = 0;
+                progressCircle.style.strokeDashoffset = circumference;
+                gsap.to(progress, {
+                    value: 99,
+                    duration: 15, 
+                    ease: "power1.inOut",
+                    onUpdate: () => {
+                        const offset = circumference - (progress.value / 100) * circumference;
+                        progressCircle.style.strokeDashoffset = offset;
+                        progressText.textContent = `${Math.round(progress.value)}%`;
+                    }
+                });
             };
             
-            const stopProgressIndicator = () => {
-                 clearInterval(progressInterval);
-                 loadingText.textContent = 'Membuat video, mohon tunggu...';
+            const stopProgressIndicator = (onCompleteCallback) => {
+                 gsap.killTweensOf(progress);
+                 gsap.to(progress, {
+                     value: 100,
+                     duration: 0.5,
+                     ease: "power1.in",
+                     onUpdate: () => {
+                        const offset = circumference - (progress.value / 100) * circumference;
+                        progressCircle.style.strokeDashoffset = offset;
+                        progressText.textContent = `${Math.round(progress.value)}%`;
+                     },
+                     onComplete: () => {
+                        loadingText.textContent = 'Selesai!';
+                        setTimeout(onCompleteCallback, 500);
+                     }
+                 });
             };
 
             const handleApiResponse = async (response) => {
@@ -366,8 +437,17 @@
                 throw new Error(`API mengembalikan format yang tidak terduga. Respon: ${responseText.substring(0, 200)}`);
             };
 
+            const downloadVideo = (url, filename) => {
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            };
+
             const callApiGenerate = async (finalPrompt) => {
-                if (!apiBaseUrl) {
+                if (!apiBaseUrl || !apiKey) {
                     showNotification('Konfigurasi API tidak termuat. Coba muat ulang halaman.', 'danger');
                     return;
                 }
@@ -375,7 +455,6 @@
                 startProgressIndicator();
                 resultDiv.innerHTML = '';
 
-                const apiKey = 'MELvQtx7BG';
                 const encodedQuery = encodeURIComponent(finalPrompt);
                 const fullUrl = `${apiBaseUrl}${selectedModel}?query=${encodedQuery}&apikey=${apiKey}`;
                 
@@ -427,8 +506,9 @@
                 } catch (err) {
                     resultDiv.innerHTML = `<p class="text-danger m-auto">Terjadi kesalahan: ${err.message}</p>`;
                 } finally {
-                    stopProgressIndicator();
-                    toggleGeneratingState(false);
+                    stopProgressIndicator(() => {
+                        toggleGeneratingState(false);
+                    });
                 }
             };
             
@@ -445,8 +525,7 @@
             // --- Initializer ---
             const initialize = () => {
                 setupAppConfig();
-                modelV3Buttons.addEventListener('click', handleModelClick);
-                modelV3FastButtons.addEventListener('click', handleModelClick);
+                modelSelection.addEventListener('click', handleModelClick);
                 generateBtn.addEventListener('click', generateMedia);
             };
 
