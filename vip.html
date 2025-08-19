@@ -5,28 +5,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VEO 3 UNLIMITED App</title>
-    
+
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    
-    <!-- React, ReactDOM, Babel, Axios -->
-    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    
+
     <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" xintegrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <style>
-        /* Custom styles for a more professional and elegant look */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@700&display=swap');
+        /* Custom styles for a modern and professional look */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap');
         
         :root {
-            --background-start: #111;
-            --background-end: #000;
-            --surface-color: #181818;
-            --border-color: #2a2a2a;
+            --background-start: #0a0a0a;
+            --background-end: #000000;
+            --surface-color: rgba(24, 24, 24, 0.8);
+            --border-color: rgba(255, 255, 255, 0.1);
             --primary-color: #3b82f6;
             --primary-hover: #60a5fa;
             --text-main: #f1f5f9;
@@ -41,47 +35,26 @@
             min-height: 100vh;
         }
 
-        h1, h3, h5, .card-title {
+        h1, h3, h4, h5, .card-title {
             font-family: 'Playfair Display', serif;
-        }
-        
-        .fade-in {
-            animation: fadeIn 0.6s ease-in-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-15px); }
-            to { opacity: 1; transform: translateY(0); }
         }
         
         .card {
             background-color: var(--surface-color);
             border: 1px solid var(--border-color);
             border-radius: 0.75rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(20px);
         }
         
-        .card-header {
-            background-color: rgba(255, 255, 255, 0.03);
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .login-card {
-             border: 1px solid transparent;
-             background-image: linear-gradient(var(--surface-color), var(--surface-color)), 
-                               radial-gradient(circle at top left, var(--primary-color), #8b5cf6);
-             background-origin: border-box;
-             background-clip: padding-box, border-box;
-        }
-
-        .form-control, .form-select {
+        .form-control {
             background-color: #1f1f1f;
             border-color: #3a3a3a;
+            color: var(--text-main);
             border-radius: 0.5rem;
-            padding: 0.75rem 1rem;
             transition: all 0.3s ease;
         }
-        .form-control:focus, .form-select:focus {
+        .form-control:focus {
             background-color: #1f1f1f;
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
@@ -90,7 +63,6 @@
         
         .btn {
             border-radius: 0.5rem;
-            padding: 0.6rem 1.5rem;
             font-weight: 600;
             transition: all 0.3s ease;
         }
@@ -105,415 +77,381 @@
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(96, 165, 250, 0.3);
         }
-        .btn-outline-secondary {
-            border-color: #4a4a4a;
-        }
-        .btn-outline-secondary:hover {
-            background-color: #2a2a2a;
-            border-color: #5a5a5a;
+
+        #notification {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1050;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
         
-        .nav-pills .nav-link {
-            color: var(--text-secondary);
+        #loadingSpinner { display: none; }
+        #result { display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: center; }
+
+        .video-wrapper {
+            flex: 1 1 45%;
+            min-width: 300px;
+            background-color: #1f1f1f;
+            padding: 1rem;
             border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        .nav-pills .nav-link.active {
+        .video-wrapper:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+        }
+        .video-wrapper video { width: 100%; border-radius: 0.25rem; background-color: #000; }
+        .video-wrapper .actions-wrapper { margin-top: 0.75rem; }
+        
+        .choice-btn { transition: all 0.2s ease-in-out; }
+        .choice-btn.active {
             background-color: var(--primary-color);
+            border-color: var(--primary-color);
             color: #fff;
-            box-shadow: 0 2px 10px rgba(59, 130, 246, 0.2);
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Login Overlay Styles */
+        #login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        #app-content {
+            display: none; /* Hidden by default */
         }
     </style>
 </head>
 
 <body>
-    <!-- The root element where the React app will be mounted -->
-    <div id="root"></div>
-
-    <!-- CORS Proxy script to handle API requests -->
-    <script>
-        (function() {
-            // --- PROXY ROTATION LOGIC ---
-            const PROXIES = [
-                { prefix: 'https://corsproxy.io/?', needsEncoding: true },
-                { prefix: 'https://api.allorigins.win/raw?url=', needsEncoding: true },
-                { prefix: 'https://cors.bridged.cc/', needsEncoding: false } // Added another proxy
-            ];
-
-            function getProxiedUrl(targetUrl) {
-                const proxy = PROXIES[Math.floor(Math.random() * PROXIES.length)];
-                return proxy.needsEncoding ? proxy.prefix + encodeURIComponent(targetUrl) : proxy.prefix + targetUrl;
-            }
-
-            const origin = window.location.protocol + '//' + window.location.host;
-
-            // --- Patch XMLHttpRequest (for Axios) ---
-            const originalXhrOpen = XMLHttpRequest.prototype.open;
-            XMLHttpRequest.prototype.open = function() {
-                const args = [].slice.call(arguments);
-                const requestUrl = args[1];
-                const targetOrigin = /^https?:\/\/([^\/]+)/i.exec(requestUrl);
-
-                if (targetOrigin && targetOrigin[0].toLowerCase() !== origin && typeof requestUrl === 'string') {
-                    args[1] = getProxiedUrl(requestUrl);
-                }
-                return originalXhrOpen.apply(this, args);
-            };
-
-            // --- Patch Fetch API (for other requests) ---
-            const originalFetch = window.fetch;
-            window.fetch = function(resource, options) {
-                const requestUrl = typeof resource === 'string' ? resource : resource.url;
-                const targetOrigin = /^https?:\/\/([^\/]+)/i.exec(requestUrl);
-
-                if (targetOrigin && targetOrigin[0].toLowerCase() !== origin) {
-                    const proxiedUrl = getProxiedUrl(requestUrl);
-                    return originalFetch(proxiedUrl, options);
-                }
-                return originalFetch(resource, options);
-            };
-        })();
-    </script>
-
-    <!-- The React application code, transpiled by Babel -->
-    <script type="text/babel">
-        const { useState, useEffect, useRef, useMemo } = React;
-
-        // Main API client class
-        class LunaAI {
-          constructor(debug = false) {
-            this.debug = debug;
-            const p = ["aHR0cHM6Ly9m", "Z3NpLmtveWVi", "LmFwcC9hcGkv", "dG9vbHMvYnlw", "YXNzY2YvdjU="];
-            const p_ = ["aHR0cHM6Ly9h", "aWFydGljbGUu", "ZXJ3ZWltYS5h", "aS9hcGkvdjEv", "c2Vjb25kYXJ5", "LXBhZ2UvYXBp", "L2NyZWF0ZQ=="];
-            const p__ = ["aHR0cHM6Ly9h", "aWFydGljbGUu", "ZXJ3ZWltYS5h", "aS9hcGkvdjEv", "c2Vjb25kYXJ5", "LXBhZ2UvYXBp", "Lw=="];
-            const p___ = ["MHg0QUFBQUFB", "QWRKWm1OeFc1", "NG8tR3Zk"];
-            this.bypassUrl = atob(p.join(''));
-            this.createUrl = atob(p_.join(''));
-            this.statusUrl = atob(p__.join(''));
-            this.sitekey = atob(p___.join(''));
-            this._interval = null;
-          }
-
-          cancel() {
-            if (this._interval) {
-              clearInterval(this._interval);
-              this._interval = null;
-            }
-          }
-
-          async bypassCF(url, apikey) {
-            const res = await axios.get(this.bypassUrl, { params: { apikey, url, sitekey: this.sitekey, mode: "turnstile-min" }, headers: { 'x-requested-with': 'XMLHttpRequest' } });
-            return res?.data?.data?.token;
-          }
-
-          async createVideo(token, payload) {
-            const headers = { 'Content-Type': 'application/json', 'verify': token, 'uniqueid': window.btoa(String(Date.now())) || "", 'x-requested-with': 'XMLHttpRequest' };
-            const res = await axios.post(this.createUrl, payload, { headers });
-            const recordId = res?.data?.data?.recordId;
-            if (recordId) return recordId;
-            throw new Error(`API returned an error: ${res?.data?.msg || res?.data?.message || JSON.stringify(res.data)}`);
-          }
-
-          async checkStatus(recordId) {
-            const res = await axios.get(`${this.statusUrl}${recordId}`, { headers: { 'x-requested-with': 'XMLHttpRequest' } });
-            return res?.data?.data;
-          }
-
-          run({ apikey, prompt, imgUrls = [], quality = "720p", duration = 8, aspectRatio = "16:9", secondaryPageId = 1946, channel = "VEO3", source = "lunaai.video", type = "features", watermarkFlag = false, privateFlag = false, isTemp = true, vipFlag = false, model = "veo-3-fast", onPoll }) {
-            return new Promise(async (resolve, reject) => {
-              try {
-                if (!apikey) return reject(new Error("API Key is missing."));
-                const token = await this.bypassCF("https://lunaai.video/features/v3-fast", apikey);
-                if (!token) return reject(new Error("Bypass token failed. Please ensure the CORS proxy is active."));
-                this.debug && console.log("[🛡️ Bypass Success] Token:", token);
-                const payload = { prompt, imgUrls, quality, duration, autoSoundFlag: false, soundPrompt: "", autoSpeechFlag: false, speechPrompt: "", speakerId: "Auto", aspectRatio, secondaryPageId, channel, source, type, watermarkFlag, privateFlag, isTemp, vipFlag, model };
-                const recordId = await this.createVideo(token, payload);
-                this.debug && console.log("[🎬 Video Requested] Record ID:", recordId);
-                this._interval = setInterval(async () => {
-                  try {
-                    const data = await this.checkStatus(recordId);
-                    onPoll?.(data);
-                    if (data?.state === "success" && data?.completeData) {
-                      clearInterval(this._interval); this._interval = null; resolve(JSON.parse(data.completeData));
-                    } else if (data?.failCode || data?.failMsg) {
-                      clearInterval(this._interval); this._interval = null; reject(new Error(`[❌ Failed] ${data.failCode || ""} ${data.failMsg || ""}`));
-                    }
-                  } catch (err) { clearInterval(this._interval); this._interval = null; reject(err); }
-                }, 5000);
-              } catch (err) { reject(err); }
-            });
-          }
-        }
-
-        function guessVideoUrl(obj) {
-          if (!obj) return undefined;
-          let finalUrl = undefined;
-          const candidates = [obj.video_url, obj.videoUrl, obj.image_url, obj.imageUrl, obj.url, obj.downloadUrl, obj?.video?.url, obj?.data?.videoUrl, obj?.data?.url];
-          for (const c of candidates) { if (typeof c === "string" && c.startsWith("http")) { finalUrl = c; break; } }
-          if (!finalUrl) { try { const queue = [obj]; while (queue.length > 0 && !finalUrl) { const cur = queue.shift(); if (typeof cur === 'string' && cur.startsWith('http') && (cur.includes('.mp4') || cur.includes('.jpg') || cur.includes('.png'))) { finalUrl = cur; break; } if (cur && typeof cur === 'object') { for (const v of Object.values(cur)) { queue.push(v); } } } } catch (e) { console.error("Deep URL search failed:", e); } }
-          if (finalUrl) { let modifiedUrl = finalUrl.replace(/_watermarked/g, ''); modifiedUrl = modifiedUrl.replace(/\.(jpg|jpeg|png|webp)(\?.*)?$/i, ".mp4"); return modifiedUrl; }
-          return undefined;
-        }
-
-        function StatusDisplay({ logs, busy, error, videoUrls }) {
-            const latestLog = logs.length > 0 ? logs[logs.length - 1] : "";
-            const statusText = latestLog.split('—')[1]?.trim() || "Menunggu untuk memulai...";
-            const progressMatch = latestLog.match(/\((\d+)%\)/);
-            const progress = progressMatch ? parseInt(progressMatch[1], 10) : 0;
-
-            let icon, colorClass, displayStatusText, progressClass;
-            if (error) {
-                icon = <i className="fa-solid fa-circle-xmark fa-3x text-danger"></i>;
-                progressClass = "bg-danger"; displayStatusText = "Terjadi Kesalahan";
-            } else if (videoUrls.length === 2) {
-                icon = <i className="fa-solid fa-circle-check fa-3x text-success"></i>;
-                progressClass = "bg-success"; displayStatusText = "Video Berhasil Dibuat!";
-            } else if (busy) {
-                icon = <div className="spinner-border text-primary" role="status" style={{width: '3rem', height: '3rem'}}><span className="visually-hidden">Loading...</span></div>;
-                progressClass = "bg-primary progress-bar-striped progress-bar-animated"; displayStatusText = statusText;
-            } else {
-                icon = <i className="fa-solid fa-circle-info fa-3x text-secondary"></i>;
-                progressClass = "bg-secondary"; displayStatusText = logs.length > 0 ? "Dibatalkan" : "Siap untuk memulai";
-            }
-            
-            const totalProgress = videoUrls.length * 50 + progress / 2;
-
-            return (
-                <div className="card h-100">
-                    <div className="card-header">
-                        <h5 className="card-title mb-0">Status Proses</h5>
-                        <p className="card-text text-body-secondary small">Perkembangan pembuatan video secara real-time</p>
-                    </div>
-                    <div className="card-body d-flex flex-column justify-content-center text-center">
-                        <div className="fade-in mb-3">{icon}</div>
-                        <p className="fw-medium mb-3" style={{height: '2rem'}}>{displayStatusText}</p>
-                        <div className="progress mb-3" role="progressbar" aria-valuenow={totalProgress} aria-valuemin="0" aria-valuemax="100" style={{height: '0.75rem'}}>
-                            <div className={`progress-bar ${progressClass} transition-all duration-500 ease-in-out`} style={{ width: `${videoUrls.length === 2 ? 100 : totalProgress}%` }} />
-                        </div>
-                        <div className="text-start small font-monospace bg-dark-subtle p-3 rounded h-100" style={{minHeight: '120px', overflowY: 'auto'}}>
-                            {logs.length > 0 ? logs.slice(-5).map((l, i) => <div key={i} className="text-break">{l}</div>) : <div className="text-body-secondary">Log akan tampil di sini…</div>}
-                        </div>
-                    </div>
+    <!-- Login Screen -->
+    <div id="login-overlay">
+        <div class="card" style="width: 22rem;">
+            <div class="card-body p-4">
+                <h4 class="card-title text-center">Login Diperlukan</h4>
+                <p class="text-body-secondary text-center small mb-4">Masukkan kata sandi untuk melanjutkan.</p>
+                <div class="mb-3">
+                    <input type="password" id="passwordInput" class="form-control" placeholder="••••••••">
                 </div>
-            );
-        }
-
-        function App() {
-          const [isAuthenticated, setIsAuthenticated] = useState(false);
-          const [passwordInput, setPasswordInput] = useState("");
-          const [passwordError, setPasswordError] = useState("");
-          
-          const samplePrompts = [
-              "A futuristic city skyline at night, with flying cars and neon lights.",
-              "A serene Japanese garden with a koi pond and cherry blossoms in full bloom.",
-              "An astronaut floating in space, looking at Earth from the window of a spaceship.",
-              "A detailed close-up of a honeybee collecting nectar from a vibrant flower.",
-              "A fantasy landscape with floating islands and waterfalls cascading into the clouds.",
-              "A cozy library with floor-to-ceiling bookshelves and a crackling fireplace.",
-              "A majestic eagle soaring over a snow-capped mountain range.",
-              "A bustling medieval marketplace with merchants and townspeople."
-          ];
-
-          const [tab, setTab] = useState("text");
-          const [prompt, setPrompt] = useState(samplePrompts[Math.floor(Math.random() * samplePrompts.length)]);
-          const [imgUrlsRaw, setImgUrlsRaw] = useState("");
-          const [quality, setQuality] = useState("720p");
-          const [model, setModel] = useState("veo-3-fast");
-          const [busy, setBusy] = useState(false);
-          const [logs, setLogs] = useState([]);
-          const [videoUrls, setVideoUrls] = useState([]);
-          const [error, setError] = useState("");
-          const [downloading, setDownloading] = useState(-1);
-          const [apiKey, setApiKey] = useState("");
-          const clientRef = useRef(null);
-          
-          function pushLog(line) { setLogs((prev) => [...prev, `${new Date().toLocaleTimeString()} — ${line}`].slice(-200)); }
-
-          useEffect(() => () => clientRef.current?.cancel(), []);
-
-          const imgUrls = useMemo(() => imgUrlsRaw.split(/\n|,/).map((s) => s.trim()).filter(Boolean), [imgUrlsRaw]);
-          
-          const handlePasswordSubmit = (e) => {
-              e.preventDefault();
-              const p1 = "MjM";
-              const p2 = "xNQ==";
-              const localPassword = atob(p1 + p2); 
-
-              if (passwordInput === localPassword) {
-                  setIsAuthenticated(true);
-                  setPasswordError("");
-              } else {
-                  setPasswordError("Password salah. Silakan coba lagi.");
-              }
-          };
-
-          async function handleRun() {
-            if (!apiKey) { 
-                setError("API Key diperlukan. Silakan masukkan API Key Anda."); 
-                return; 
-            }
-            setBusy(true); setError(""); setVideoUrls([]); setLogs([]);
-            const app = new LunaAI(true);
-            clientRef.current = app;
-            try {
-              for (let i = 0; i < 2; i++) {
-                pushLog(`Generating video ${i + 1} of 2...`);
-                const res = await app.run({ apikey: apiKey, prompt, imgUrls: tab === "image" ? imgUrls : [], quality, model, vipFlag: true, onPoll: (data) => { if (!data) return; const pct = data?.percent || data?.progress; const st = data?.state || data?.status; pushLog(`Status (Video ${i + 1}): ${st ?? "…"}${pct ? ` (${pct}%)` : ""}`); } });
-                const url = guessVideoUrl(res);
-                if (url) { setVideoUrls(prev => [...prev, url]); pushLog(`✅ Success — video ${i + 1} generated.`); } 
-                else { pushLog(`⚠️ Failed to get URL for video ${i + 1}.`); }
-              }
-            } catch (e) {
-              console.error(e);
-              let errorMessage = e?.message || String(e);
-              if (e.isAxiosError) { errorMessage = `Network request failed: ${e.message}.`; if (e.response) { errorMessage += ` (Status: ${e.response.status} ${e.response.statusText})`; } }
-              const fullError = `${errorMessage} This can be caused by two main issues: 1) The public CORS proxy may be overloaded or temporarily down. Please try again later. 2) Your API Key may be invalid or expired.`;
-              setError(fullError); pushLog(`❌ Error: ${errorMessage}`);
-            } finally { setBusy(false); }
-          }
-
-          function handleCancel() { clientRef.current?.cancel(); setBusy(false); pushLog("⏹️ Cancelled by user."); }
-
-          async function handleDownload(url, index) {
-              setDownloading(index); setError('');
-              try {
-                  // The fetch patch will automatically proxy this request.
-                  const response = await fetch(url);
-                  if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
-                  const blob = await response.blob();
-                  const objectUrl = window.URL.createObjectURL(blob);
-                  const link = document.createElement('a');
-                  link.href = objectUrl; link.download = `veo3-unlimited-video-${index + 1}.mp4`;
-                  document.body.appendChild(link); link.click(); document.body.removeChild(link);
-                  window.URL.revokeObjectURL(objectUrl);
-              } catch (err) { console.error('Download failed:', err); setError("Download failed. Please try right-clicking the video and selecting 'Save video as...'. This may be due to a network or proxy issue.");
-              } finally { setDownloading(-1); }
-          }
-          
-          if (!isAuthenticated) {
-              return (
-                  <div className="container vh-100 d-flex align-items-center justify-content-center">
-                      <div className="card login-card shadow-lg fade-in" style={{width: '25rem'}}>
-                          <div className="card-body p-4 p-md-5">
-                              <h3 className="card-title text-center mb-2">VEO 3 UNLIMITED</h3>
-                              <p className="card-subtitle mb-4 text-center text-body-secondary">Silakan masuk untuk melanjutkan</p>
-                              <form onSubmit={handlePasswordSubmit}>
-                                  <div className="mb-3">
-                                      <label htmlFor="password-input" className="form-label">Password</label>
-                                      <input
-                                          type="password"
-                                          className="form-control"
-                                          id="password-input"
-                                          value={passwordInput}
-                                          onChange={(e) => setPasswordInput(e.target.value)}
-                                          placeholder="••••••••"
-                                          autoFocus
-                                      />
-                                  </div>
-                                  {passwordError && <div className="alert alert-danger py-2 small">{passwordError}</div>}
-                                  <div className="d-grid gap-2 mt-4">
-                                      <button type="submit" className="btn btn-primary">
-                                          Masuk
-                                      </button>
-                                       <a href="https://wa.me/message/E4KYUUBRW37VO1" target="_blank" rel="noopener noreferrer" className="btn btn-outline-secondary">
-                                          Daftar
-                                      </a>
-                                  </div>
-                              </form>
-                          </div>
-                      </div>
-                  </div>
-              );
-          }
-
-          return (
-            <div className="container-fluid p-3 p-md-4">
-                <header className="fade-in mb-4 pb-3 border-bottom border-secondary-subtle">
-                  <div>
-                    <h1 className="fw-bold fs-2">VEO 3 UNLIMITED</h1>
-                    <p className="text-body-secondary">Karya anda tercipta melalui sentuhan kreativitas dan teknologi AI</p>
-                  </div>
-                </header>
-
-                <div className="card mb-4">
-                    <div className="card-header">
-                        <h5 className="card-title mb-0">Konfigurasi</h5>
-                        <p className="card-text text-body-secondary small">Masukkan parameter video Anda</p>
-                    </div>
-                    <div className="card-body p-4">
-                        <div className="row g-4">
-                            <div className="col-md-6">
-                                <ul className="nav nav-pills nav-fill bg-dark-subtle p-1 rounded mb-4">
-                                    <li className="nav-item">
-                                        <a href="#" onClick={(e) => {e.preventDefault(); setTab('text');}} className={`nav-link ${tab === 'text' ? 'active' : ''}`}><i className="fa-solid fa-file-lines me-2"></i>Teks ke Video</a>
-                                    </li>
-                                    <li className="nav-item">
-                                        <a href="#" onClick={(e) => {e.preventDefault(); setTab('image');}} className={`nav-link ${tab === 'image' ? 'active' : ''}`}><i className="fa-solid fa-image me-2"></i>Gambar ke Video</a>
-                                    </li>
-                                </ul>
-                                {tab === 'text' && <div className="mb-3"><label htmlFor="prompt-text" className="form-label">Prompt</label><textarea id="prompt-text" value={prompt} onChange={(e) => setPrompt(e.target.value)} rows="8" className="form-control" placeholder="Kota cyberpunk di malam hari dengan hujan neon…"></textarea><div className="form-text">Jelaskan adegan untuk video tersebut.</div></div>}
-                                {tab === 'image' && <div className="space-y-4">
-                                    <div className="mb-3"><label htmlFor="prompt-img" className="form-label">Prompt (opsional)</label><textarea id="prompt-img" value={prompt} onChange={(e) => setPrompt(e.target.value)} rows="3" className="form-control" placeholder="Geser dari kiri ke kanan melintasi cakrawala…"></textarea><div className="form-text">Panduan tambahan untuk adegan tersebut.</div></div>
-                                    <div className="mb-3"><label htmlFor="img-urls" className="form-label">URL Gambar</label><textarea id="img-urls" value={imgUrlsRaw} onChange={(e) => setImgUrlsRaw(e.target.value)} rows="4" className="form-control" placeholder={`https://placehold.co/600x400/000/FFF?text=Image+1\nhttps://placehold.co/600x400/FFF/000?text=Image+2`}></textarea><div className="form-text">Satu URL per baris. Urutan berpengaruh.</div></div>
-                                    {!!imgUrls.length && <div className="row row-cols-2 row-cols-sm-3 g-2">{imgUrls.map((u, i) => (<div key={i} className="col"><img src={u} alt={`img-${i}`} className="img-fluid rounded border" onError={(e) => { e.target.onerror = null; e.target.src='https://placehold.co/150/333/EEE?text=Invalid'; }} /></div>))}</div>}
-                                </div>}
-                            </div>
-                            <div className="col-md-6">
-                                <div className="row g-3 mb-4">
-                                    <div className="col"><label htmlFor="quality" className="form-label">Kualitas</label><select id="quality" value={quality} onChange={e => setQuality(e.target.value)} className="form-select"><option value="480p">480p</option><option value="720p">720p</option><option value="1080p">1080p</option></select></div>
-                                    <div className="col"><label htmlFor="model" className="form-label">Model</label><select id="model" value={model} onChange={e => setModel(e.target.value)} className="form-select"><option value="veo-3-fast">Veo 3 Fast</option><option value="veo-3">Veo 3</option></select></div>
-                                </div>
-                                <div className="mb-3">
-                                    <label htmlFor="api-key" className="form-label">API Key</label>
-                                    <input type="password" id="api-key" value={apiKey} onChange={e => setApiKey(e.target.value)} className="form-control" placeholder="Masukkan API Key Anda di sini" />
-                                    <div className="form-text">API Key diperlukan untuk membuat video.</div>
-                                </div>
-                                <div className="d-flex gap-2 mb-4">
-                                    <button onClick={handleRun} disabled={busy || !apiKey} className="btn btn-primary"><i className={`fa-solid ${busy ? 'fa-spinner fa-spin' : 'fa-play'} me-2`}></i>{busy ? 'Membuat...' : 'Buat Video'}</button>
-                                    <button onClick={handleCancel} disabled={!busy} className="btn btn-secondary"><i className="fa-solid fa-stop me-2"></i>Batal</button>
-                                </div>
-                                <div className="alert alert-info small"><p className="fw-bold mb-1">Catatan Jaringan</p><p className="mb-0">Aplikasi ini menggunakan proxy publik untuk mengakses API. Jika Anda mengalami kesalahan jaringan, ini mungkin disebabkan oleh lalu lintas proxy yang padat. Silakan coba lagi setelah beberapa saat.</p></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="row g-4">
-                    <div className="col-lg-8">
-                        <div className="card h-100">
-                            <div className="card-header"><h5 className="card-title mb-0">Pratinau Video</h5><p className="card-text text-body-secondary small">Menampilkan cuplikan hasil video yang Anda buat.</p></div>
-                            <div className="card-body">
-                                {videoUrls.length > 0 ? (
-                                    <div className="row row-cols-1 row-cols-sm-2 g-3">
-                                        {videoUrls.map((url, index) => (
-                                            <div key={index} className="col">
-                                                <video src={url} controls className="w-100 rounded-3 shadow-sm bg-black" />
-                                                <div className="d-grid mt-2"><button onClick={() => handleDownload(url, index)} disabled={downloading === index} className="btn btn-sm btn-outline-secondary"><i className={`fa-solid ${downloading === index ? 'fa-spinner fa-spin' : 'fa-download'} me-2`}></i>Unduh Video {index + 1}</button></div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="d-flex align-items-center justify-content-center bg-dark-subtle rounded-4" style={{minHeight: '250px'}}>
-                                        <p className="text-body-secondary">{busy ? 'Sedang membuat video...' : 'Video Anda akan muncul di sini.'}</p>
-                                    </div>
-                                )}
-                                {error && <div className="alert alert-danger mt-3 small">{error}</div>}
-                            </div>
-                        </div>
-                    </div>
-                    <div className="col-lg-4">
-                        <StatusDisplay logs={logs} busy={busy} error={error} videoUrls={videoUrls} />
-                    </div>
-                </div>
-
-                <footer className="text-center text-body-secondary small py-4 mt-4">
-                  © {new Date().getFullYear()} — VEO 3 Studio • Ditenagai oleh Arif Kurniawan.
-                </footer>
+                <button id="loginBtn" class="btn btn-primary w-100">Masuk</button>
+                <p id="loginError" class="small mt-3 text-center" style="display: none;"></p>
             </div>
-          );
-        }
+        </div>
+    </div>
 
-        ReactDOM.render(<App />, document.getElementById('root'));
-    </script>
+    <!-- Main Application Content -->
+    <div id="app-content">
+        <div class="container py-4">
+            <header class="text-center mb-4 pb-3 border-bottom border-secondary-subtle">
+                <h1 class="fw-bold fs-2">VEO 3 UNLIMITED</h1>
+                <p class="text-body-secondary">Karya anda tercipta melalui sentuhan kreativitas dan teknologi AI</p>
+            </header>
+
+            <div id="notification" class="alert alert-warning" role="alert"></div>
+
+            <div class="card">
+                <div class="card-body p-4">
+                    <div class="row g-4">
+                        <!-- Input and Configuration Column -->
+                        <div class="col-lg-6">
+                            <div class="mb-3">
+                                <label for="promptInputMain" class="form-label">Prompt</label>
+                                <textarea id="promptInputMain" class="form-control" rows="5" placeholder="A futuristic city skyline at night..."></textarea>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Pilih Model VEO 3</label>
+                                <div id="modelV3Buttons" class="btn-group w-100">
+                                    <button type="button" class="btn btn-outline-secondary choice-btn" data-value="veo3-sd">SD</button>
+                                    <button type="button" class="btn btn-outline-secondary choice-btn active" data-value="veo3">HD</button>
+                                    <button type="button" class="btn btn-outline-secondary choice-btn" data-value="veo3-fhd">FHD</button>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label">Pilih Model VEO 3 (Cepat)</label>
+                                <div id="modelV3FastButtons" class="btn-group w-100">
+                                    <button type="button" class="btn btn-outline-secondary choice-btn" data-value="veo3-fast-sd">SD</button>
+                                    <button type="button" class="btn btn-outline-secondary choice-btn" data-value="veo3-fast">HD</button>
+                                    <button type="button" class="btn btn-outline-secondary choice-btn" data-value="veo3-fast-fhd">FHD</button>
+                                </div>
+                            </div>
+
+                            <button id="generateBtn" class="btn btn-primary w-100">
+                                <i class="fa-solid fa-play me-2"></i>Buat Video
+                            </button>
+                        </div>
+
+                        <!-- Result Column -->
+                        <div class="col-lg-6">
+                            <h5 class="mb-3">Hasil Video</h5>
+                            <div id="loadingSpinner" class="text-center">
+                                <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p id="loadingText" class="mt-2 text-body-secondary">Membuat video, mohon tunggu...</p>
+                            </div>
+                            <div id="result" class="bg-dark-subtle p-3 rounded-3" style="min-height: 250px;">
+                                 <p class="text-body-secondary m-auto">Video Anda akan muncul di sini.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="text-center text-body-secondary small py-4 mt-4">
+                © 2024 — VEO 3 Studio • Ditenagai oleh Arif Kurniawan.
+            </footer>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    <!-- Application Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Login Elements ---
+            const loginOverlay = document.getElementById('login-overlay');
+            const appContent = document.getElementById('app-content');
+            const passwordInput = document.getElementById('passwordInput');
+            const loginBtn = document.getElementById('loginBtn');
+            const loginError = document.getElementById('loginError');
+
+            // --- App Elements ---
+            const modelV3Buttons = document.getElementById('modelV3Buttons');
+            const modelV3FastButtons = document.getElementById('modelV3FastButtons');
+            const notificationDiv = document.getElementById('notification');
+            const generateBtn = document.getElementById('generateBtn');
+            const spinner = document.getElementById('loadingSpinner');
+            const resultDiv = document.getElementById('result');
+            const loadingText = document.getElementById('loadingText');
+            const promptInputMain = document.getElementById('promptInputMain');
+
+            // --- State ---
+            let correctPassword = null;
+            let apiBaseUrl = null;
+            let apiKey = null;
+            let selectedModel = 'veo3';
+            let progressInterval = null;
+            let isGenerating = false;
+
+            // --- Config & Login Logic ---
+            const setupAppConfig = () => {
+                loginBtn.disabled = true;
+                passwordInput.disabled = true;
+                generateBtn.disabled = true;
+                loginError.className = 'text-info small mt-3 text-center';
+                loginError.textContent = 'Memuat konfigurasi...';
+                loginError.style.display = 'block';
+
+                const passwordParts = [ 'd2qs', '.t', 'zzz/', '2.gi', 'ssdw', 's://', 'ectv', 'http', 'rafa', 'ds23', 'xt', 'proj', '.io/', 'thub', '2er' ];
+                const passwordOrder = [ 7, 5, 8, 11, 6, 3, 13, 12, 2, 4, 0, 9, 14, 1, 10 ];
+                
+                const apiParts = [ 'wdqd', 'zzz/', 'sdwd', '.io/', 's://', 'http', '2.gi', 'f.t', 'thub', 'proj', 'rafa', 'eewd', 'efee', 'ectv', 'xt' ];
+                const apiOrder = [ 5, 4, 10, 9, 13, 6, 8, 3, 1, 2, 0, 11, 12, 7, 14 ];
+                
+                const apiKeyParts = [ 'tv', 'zzz', 'ec', 'ub', '.i', 'tp', 's:', 'o/', 'ra', 'ht', '/wdwddwdwdkkmm', 'pr', 'fa', '2.', 'oj', 'txt', '.', '//', 'gi', 'th' ];
+                const apiKeyOrder = [ 9, 5, 6, 17, 8, 12, 11, 14, 2, 0, 13, 18, 19, 3, 4, 7, 1, 10, 16, 15 ];
+
+                const passwordUrl = passwordOrder.map(index => passwordParts[index]).join('');
+                const apiUrl = apiOrder.map(index => apiParts[index]).join('');
+                const apiKeyUrl = apiKeyOrder.map(index => apiKeyParts[index]).join('');
+
+                Promise.all([
+                    fetch(passwordUrl).then(res => res.ok ? res.text() : Promise.reject(`Gagal memuat kata sandi: ${res.status}`)),
+                    fetch(apiUrl).then(res => res.ok ? res.text() : Promise.reject(`Gagal memuat URL API: ${res.status}`)),
+                    fetch(apiKeyUrl).then(res => res.ok ? res.text() : Promise.reject(`Gagal memuat kunci API: ${res.status}`))
+                ])
+                .then(([passwordText, apiUrlText, apiKeyText]) => {
+                    correctPassword = passwordText.trim();
+                    apiBaseUrl = apiUrlText.trim();
+                    apiKey = apiKeyText.trim();
+
+                    if (apiBaseUrl && !apiBaseUrl.endsWith('/')) {
+                        apiBaseUrl += '/';
+                    }
+
+                    loginBtn.disabled = false;
+                    passwordInput.disabled = false;
+                    generateBtn.disabled = false;
+                    loginError.style.display = 'none';
+                    loginError.textContent = '';
+                })
+                .catch(error => {
+                    console.error('Error fetching configuration:', error);
+                    loginError.className = 'text-danger small mt-3 text-center';
+                    loginError.textContent = 'Gagal memuat konfigurasi. Periksa koneksi Anda.';
+                });
+            };
+            
+            const verifyLogin = () => {
+                if (passwordInput.value === correctPassword) {
+                    loginOverlay.style.display = 'none';
+                    appContent.style.display = 'block';
+                } else {
+                    loginError.className = 'text-danger small mt-3 text-center';
+                    loginError.textContent = "Kata sandi salah.";
+                    loginError.style.display = 'block';
+                }
+            };
+
+            loginBtn.addEventListener('click', verifyLogin);
+            passwordInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') verifyLogin();
+            });
+
+            // --- Main App Logic ---
+            const handleModelClick = (e) => {
+                if (e.target && e.target.classList.contains('choice-btn')) {
+                    document.querySelectorAll('.choice-btn').forEach(btn => btn.classList.remove('active'));
+                    e.target.classList.add('active');
+                    selectedModel = e.target.dataset.value;
+                }
+            };
+
+            const showNotification = (message, type = 'warning') => {
+                notificationDiv.className = `alert alert-${type}`;
+                notificationDiv.textContent = message;
+                notificationDiv.style.display = 'block';
+                setTimeout(() => { notificationDiv.style.display = 'none'; }, 5000);
+            };
+
+            const toggleGeneratingState = (generating) => {
+                isGenerating = generating;
+                generateBtn.disabled = generating;
+                spinner.style.display = generating ? 'block' : 'none';
+                resultDiv.style.display = generating ? 'none' : 'flex';
+            };
+
+            const startProgressIndicator = () => {
+                let percentage = 0;
+                clearInterval(progressInterval);
+                progressInterval = setInterval(() => {
+                    percentage = Math.min(99, percentage + Math.floor(Math.random() * 3) + 1);
+                    loadingText.textContent = `Membuat video, mohon tunggu... (${percentage}%)`;
+                }, 400);
+            };
+            
+            const stopProgressIndicator = () => {
+                 clearInterval(progressInterval);
+                 loadingText.textContent = 'Membuat video, mohon tunggu...';
+            };
+
+            const handleApiResponse = async (response) => {
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    if (response.status >= 500) {
+                         throw new Error(`Server API (${response.status}) sedang bermasalah. Coba lagi nanti.`);
+                    }
+                    throw new Error(`API Error (${response.status}): ${errorText.substring(0, 200)}`);
+                }
+                const contentType = response.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
+                    return response.json();
+                }
+                const responseText = await response.text();
+                throw new Error(`API mengembalikan format yang tidak terduga. Respon: ${responseText.substring(0, 200)}`);
+            };
+
+            const callApiGenerate = async (finalPrompt) => {
+                if (!apiBaseUrl || !apiKey) {
+                    showNotification('Konfigurasi API tidak termuat. Coba muat ulang halaman.', 'danger');
+                    return;
+                }
+                toggleGeneratingState(true);
+                startProgressIndicator();
+                resultDiv.innerHTML = '';
+
+                const encodedQuery = encodeURIComponent(finalPrompt);
+                const fullUrl = `${apiBaseUrl}${selectedModel}?query=${encodedQuery}&apikey=${apiKey}`;
+                
+                const promises = [
+                    fetch(fullUrl).then(handleApiResponse),
+                    fetch(fullUrl).then(handleApiResponse)
+                ];
+
+                try {
+                    const results = await Promise.allSettled(promises);
+                    
+                    results.forEach((result, index) => {
+                        const videoWrapper = document.createElement('div');
+                        videoWrapper.className = 'video-wrapper';
+                        
+                        const title = document.createElement('h4');
+                        title.textContent = `Hasil Video ${index + 1}`;
+                        videoWrapper.appendChild(title);
+
+                        if (result.status === 'fulfilled' && result.value?.data?.data?.video_url) {
+                            const video = document.createElement('video');
+                            video.src = result.value.data.data.video_url;
+                            video.controls = true;
+                            video.loop = true;
+                            video.autoplay = true;
+                            video.muted = true;
+                            video.style.objectFit = 'contain';
+                            
+                            const actionsWrapper = document.createElement('div');
+                            actionsWrapper.className = 'actions-wrapper';
+
+                            const downloadBtn = document.createElement('button');
+                            downloadBtn.className = 'btn btn-sm btn-outline-secondary';
+                            downloadBtn.innerHTML = '<i class="fa-solid fa-download me-2"></i>Download';
+                            downloadBtn.onclick = () => downloadVideo(video.src, `video_hasil_${index + 1}.mp4`);
+
+                            actionsWrapper.appendChild(downloadBtn);
+                            videoWrapper.appendChild(video);
+                            videoWrapper.appendChild(actionsWrapper);
+                        } else {
+                            const errorMessage = result.reason?.message || 'Gagal memuat video.';
+                            const errorP = document.createElement('p');
+                            errorP.className = 'text-danger';
+                            errorP.textContent = `Error: ${errorMessage}`;
+                            videoWrapper.appendChild(errorP);
+                        }
+                        resultDiv.appendChild(videoWrapper);
+                    });
+                } catch (err) {
+                    resultDiv.innerHTML = `<p class="text-danger m-auto">Terjadi kesalahan: ${err.message}</p>`;
+                } finally {
+                    stopProgressIndicator();
+                    toggleGeneratingState(false);
+                }
+            };
+            
+            const generateMedia = () => {
+                if (isGenerating) return;
+                const prompt = promptInputMain.value.trim();
+                if (!prompt) {
+                    showNotification('Silakan masukkan prompt.', 'danger');
+                    return;
+                }
+                callApiGenerate(prompt);
+            };
+
+            // --- Initializer ---
+            const initialize = () => {
+                setupAppConfig();
+                modelV3Buttons.addEventListener('click', handleModelClick);
+                modelV3FastButtons.addEventListener('click', handleModelClick);
+                generateBtn.addEventListener('click', generateMedia);
+            };
+
+            initialize();
+        });
+    </script>
 </body>
 </html>
